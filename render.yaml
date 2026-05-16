@@ -3,7 +3,7 @@ services:
     name: kairos
     runtime: node
     plan: free
-    buildCommand: pnpm install && pnpm build:client
+    buildCommand: npm install -g pnpm && pnpm install && pnpm build:client
     startCommand: NODE_ENV=production pnpm start
     envVars:
       - key: NODE_ENV

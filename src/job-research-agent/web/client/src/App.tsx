@@ -8,21 +8,22 @@ declare global {
   }
 }
 import {
-  Alert, AppBar, Box, Button, Card, CardContent, CircularProgress,
+  Alert, AppBar, Box, Button, Card, CardContent, CircularProgress, Collapse,
   Container, Divider, FormControl, GlobalStyles, Grid, IconButton,
   InputAdornment, InputLabel, LinearProgress, Link, MenuItem,
   Select, Skeleton, Slider, Stack, TextField, Toolbar, Tooltip, Typography,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import type { SelectChangeEvent } from '@mui/material/Select';
-import DarkModeIcon   from '@mui/icons-material/DarkMode';
-import DownloadIcon   from '@mui/icons-material/Download';
-import LightModeIcon  from '@mui/icons-material/LightMode';
-import OpenInNewIcon  from '@mui/icons-material/OpenInNew';
-import PlayArrowIcon  from '@mui/icons-material/PlayArrow';
-import RefreshIcon    from '@mui/icons-material/Refresh';
-import SearchIcon     from '@mui/icons-material/Search';
+import DarkModeIcon    from '@mui/icons-material/DarkMode';
+import DownloadIcon    from '@mui/icons-material/Download';
+import LightModeIcon   from '@mui/icons-material/LightMode';
+import OpenInNewIcon   from '@mui/icons-material/OpenInNew';
+import PlayArrowIcon   from '@mui/icons-material/PlayArrow';
+import RefreshIcon     from '@mui/icons-material/Refresh';
+import SearchIcon      from '@mui/icons-material/Search';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
+import TuneIcon        from '@mui/icons-material/Tune';
 
 // ── AdSense config ─────────────────────────────────────────────────────────────
 // Preencha no .env.local: VITE_ADSENSE_CLIENT=ca-pub-XXXXXXXXXXXXXXXX
@@ -147,6 +148,7 @@ export default function App({
   const [status, setStatus]       = useState('Carregando...');
   const [error, setError]         = useState<string | null>(null);
   const [listVersion, setListVersion] = useState(0);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const deferredQuery = useDeferredValue(query);
 
@@ -222,6 +224,7 @@ export default function App({
 
   const totalJobs = payload.jobs.length;
   const showSkeleton = loading && totalJobs === 0;
+  const activeFilterCount = [group !== '', market !== '', remoteOnly, score > 0].filter(Boolean).length;
 
   const topStats = [
     { label: 'Coletadas',    value: payload.summary?.totalRawJobs ?? 0 },
@@ -249,7 +252,7 @@ export default function App({
               <Typography sx={{ fontWeight: 800, fontSize: '0.95rem', color: 'primary.main', lineHeight: 1.1, letterSpacing: '-0.02em' }}>
                 Kairos
               </Typography>
-              <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1, fontSize: '0.63rem' }}>
+              <Typography variant="caption" sx={{ color: 'text.secondary', lineHeight: 1, fontSize: '0.63rem', display: { xs: 'none', sm: 'block' } }}>
                 Oportunidades tech curadas
               </Typography>
             </Box>
@@ -278,9 +281,16 @@ export default function App({
             variant="outlined" size="small"
             startIcon={<RefreshIcon sx={{ fontSize: '14px !important' }} />}
             onClick={() => void loadLatest()} disabled={loading}
-            sx={{ borderColor: 'divider', color: 'text.secondary', fontSize: '0.78rem', '&:hover': { borderColor: 'primary.light', color: 'primary.main' }, '&.Mui-disabled': { borderColor: 'divider', color: 'text.disabled' } }}
+            sx={{
+              borderColor: 'divider', color: 'text.secondary', fontSize: '0.78rem',
+              minWidth: { xs: 36, sm: 'auto' },
+              px: { xs: 1, sm: 1.5 },
+              '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
+              '&:hover': { borderColor: 'primary.light', color: 'primary.main' },
+              '&.Mui-disabled': { borderColor: 'divider', color: 'text.disabled' },
+            }}
           >
-            Atualizar
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>Atualizar</Box>
           </Button>
           <Button
             variant="contained" size="small"
@@ -288,16 +298,18 @@ export default function App({
             disabled={running} onClick={() => void runResearch()}
             sx={{
               fontSize: '0.78rem',
+              minWidth: { xs: 36, sm: 'auto' },
+              px: { xs: 1, sm: 1.5 },
+              '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
               background: 'linear-gradient(135deg, #1A2E4A, #2B5072)',
               '&:hover': { background: 'linear-gradient(135deg, #243F65, #356090)' },
               '&.Mui-disabled': {
                 background: 'linear-gradient(135deg, #1A2E4A, #2B5072)',
-                opacity: 0.55,
-                color: 'rgba(255,255,255,0.75)',
+                opacity: 0.55, color: 'rgba(255,255,255,0.75)',
               },
             }}
           >
-            {running ? 'Processando...' : 'Nova busca'}
+            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>{running ? 'Processando...' : 'Nova busca'}</Box>
           </Button>
         </Toolbar>
       </AppBar>
@@ -352,62 +364,16 @@ export default function App({
 
         <Grid container spacing={2.5}>
 
-          {/* Sidebar */}
-          <Grid size={{ xs: 12, lg: 3 }}>
+          {/* Left — Patrocinado (ads): oculto em mobile, visível apenas no desktop */}
+          <Grid size={{ xs: 12, lg: 3 }} sx={{ order: { xs: 3, lg: 1 }, display: { xs: 'none', lg: 'block' } }}>
             <Stack spacing={2} sx={{ position: { lg: 'sticky' }, top: 72 }}>
-
-              <Card sx={{ overflow: 'hidden' }}>
-                <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}>
-                  <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>Filtros</Typography>
-                </Box>
-                <Stack spacing={2} sx={{ p: 2.5 }}>
-                  <TextField
-                    label="Buscar" value={query} onChange={(e) => setQuery(e.target.value)}
-                    placeholder="React, AWS, Stripe..." size="small"
-                    slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 15, color: 'text.secondary' }} /></InputAdornment> } }}
-                  />
-                  <FilterSelect label="Mercado" value={market} options={markets.map((m) => [m, marketLabel(m)])} onChange={setMarket} />
-                  <Box>
-                    <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 0.75 }}>
-                      <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.72rem' }}>Relevância mínima</Typography>
-                      <Typography variant="caption" sx={{ fontWeight: 800, color: 'primary.main', fontSize: '0.72rem' }}>{score > 0 ? `${score}+` : 'Todas'}</Typography>
-                    </Stack>
-                    <Slider value={score} onChange={(_, v) => setScore(v as number)} min={0} max={100} size="small" />
-                  </Box>
-                  <Button
-                    size="small" variant={remoteOnly ? 'contained' : 'outlined'}
-                    onClick={() => setRemoteOnly((v) => !v)}
-                    sx={{ justifyContent: 'flex-start', fontSize: '0.8rem', ...(remoteOnly ? { background: 'linear-gradient(135deg, #1A2E4A, #2B5072)' } : { borderColor: 'divider', color: 'text.secondary' }) }}
-                  >
-                    {remoteOnly ? '✓ Apenas remoto' : 'Apenas remoto'}
-                  </Button>
-                </Stack>
-              </Card>
-
-              <Card sx={{ overflow: 'hidden' }}>
-                <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}>
-                  <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>Exportar</Typography>
-                </Box>
-                <Stack spacing={0.5} sx={{ p: 2 }}>
-                  <Button fullWidth variant="contained" startIcon={<DownloadIcon sx={{ fontSize: '15px !important' }} />} href="/api/download-all"
-                    sx={{ justifyContent: 'flex-start', py: 0.9, fontSize: '0.8rem', background: 'linear-gradient(135deg, #1A2E4A, #2B5072)', '&:hover': { background: 'linear-gradient(135deg, #243F65, #356090)' } }}>
-                    Baixar tudo em ZIP
-                  </Button>
-                  {payload.downloads.length > 0 && <Divider sx={{ my: 0.5 }} />}
-                  {payload.downloads.map((file) => (
-                    <Button key={file.name} href={`/api/download/${encodeURIComponent(file.name)}`}
-                      endIcon={<DownloadIcon sx={{ fontSize: '12px !important' }} />} size="small"
-                      sx={{ justifyContent: 'space-between', color: 'text.secondary', fontWeight: 500, px: 0.5, fontSize: '0.74rem', '&:hover': { color: 'primary.main' } }}>
-                      {file.label}
-                    </Button>
-                  ))}
-                </Stack>
-              </Card>
+              <RightSidebarAdPrimary />
+              <RightSidebarAdSecondary />
             </Stack>
           </Grid>
 
           {/* Main */}
-          <Grid size={{ xs: 12, lg: 6 }}>
+          <Grid size={{ xs: 12, lg: 6 }} sx={{ order: { xs: 1, lg: 2 } }}>
             <Stack spacing={2}>
 
               {/* Distribution */}
@@ -462,6 +428,28 @@ export default function App({
                     <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 600, fontSize: '0.72rem' }}>
                       {filteredJobs.length} {filteredJobs.length === 1 ? 'vaga' : 'vagas'}
                     </Typography>
+                    {/* Filtros toggle — mobile only */}
+                    <Tooltip title="Filtros">
+                      <IconButton
+                        size="small"
+                        onClick={() => setFiltersOpen((v) => !v)}
+                        sx={{
+                          display: { lg: 'none' },
+                          color: filtersOpen || activeFilterCount > 0 ? 'primary.main' : 'text.secondary',
+                          position: 'relative',
+                        }}
+                      >
+                        <TuneIcon sx={{ fontSize: 18 }} />
+                        {activeFilterCount > 0 && (
+                          <Box sx={{
+                            position: 'absolute', top: 2, right: 2,
+                            width: 8, height: 8, borderRadius: '50%',
+                            bgcolor: 'primary.main', border: '1.5px solid',
+                            borderColor: 'background.paper',
+                          }} />
+                        )}
+                      </IconButton>
+                    </Tooltip>
                   </Stack>
                 </CardContent>
               </Card>
@@ -501,11 +489,88 @@ export default function App({
             </Stack>
           </Grid>
 
-          {/* Right ad rail */}
-          <Grid size={{ xs: 12, lg: 3 }}>
+          {/* Right — Filtros + Exportar */}
+          <Grid size={{ xs: 12, lg: 3 }} sx={{ order: { xs: 2, lg: 3 } }}>
             <Stack spacing={2} sx={{ position: { lg: 'sticky' }, top: 72 }}>
-              <RightSidebarAdPrimary />
-              <RightSidebarAdSecondary />
+
+              {/* Filtros — toggle no mobile, sempre visível no desktop */}
+              <Box>
+                <Collapse in={filtersOpen} sx={{ display: { lg: 'none' } }}>
+                  <Card sx={{ overflow: 'hidden', mb: 2 }}>
+                    <Stack spacing={2} sx={{ p: 2.5 }}>
+                      <TextField
+                        label="Buscar" value={query} onChange={(e) => setQuery(e.target.value)}
+                        placeholder="React, AWS, Stripe..." size="small"
+                        slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 15, color: 'text.secondary' }} /></InputAdornment> } }}
+                      />
+                      <FilterSelect label="Mercado" value={market} options={markets.map((m) => [m, marketLabel(m)])} onChange={setMarket} />
+                      <Box>
+                        <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 0.75 }}>
+                          <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.72rem' }}>Relevância mínima</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 800, color: 'primary.main', fontSize: '0.72rem' }}>{score > 0 ? `${score}+` : 'Todas'}</Typography>
+                        </Stack>
+                        <Slider value={score} onChange={(_, v) => setScore(v as number)} min={0} max={100} size="small" />
+                      </Box>
+                      <Button
+                        size="small" variant={remoteOnly ? 'contained' : 'outlined'}
+                        onClick={() => setRemoteOnly((v) => !v)}
+                        sx={{ justifyContent: 'flex-start', fontSize: '0.8rem', ...(remoteOnly ? { background: 'linear-gradient(135deg, #1A2E4A, #2B5072)' } : { borderColor: 'divider', color: 'text.secondary' }) }}
+                      >
+                        {remoteOnly ? '✓ Apenas remoto' : 'Apenas remoto'}
+                      </Button>
+                    </Stack>
+                  </Card>
+                </Collapse>
+
+                {/* Desktop — card completo com título */}
+                <Card sx={{ overflow: 'hidden', display: { xs: 'none', lg: 'block' } }}>
+                  <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}>
+                    <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>Filtros</Typography>
+                  </Box>
+                  <Stack spacing={2} sx={{ p: 2.5 }}>
+                    <TextField
+                      label="Buscar" value={query} onChange={(e) => setQuery(e.target.value)}
+                      placeholder="React, AWS, Stripe..." size="small"
+                      slotProps={{ input: { startAdornment: <InputAdornment position="start"><SearchIcon sx={{ fontSize: 15, color: 'text.secondary' }} /></InputAdornment> } }}
+                    />
+                    <FilterSelect label="Mercado" value={market} options={markets.map((m) => [m, marketLabel(m)])} onChange={setMarket} />
+                    <Box>
+                      <Stack direction="row" sx={{ justifyContent: 'space-between', mb: 0.75 }}>
+                        <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 600, fontSize: '0.72rem' }}>Relevância mínima</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 800, color: 'primary.main', fontSize: '0.72rem' }}>{score > 0 ? `${score}+` : 'Todas'}</Typography>
+                      </Stack>
+                      <Slider value={score} onChange={(_, v) => setScore(v as number)} min={0} max={100} size="small" />
+                    </Box>
+                    <Button
+                      size="small" variant={remoteOnly ? 'contained' : 'outlined'}
+                      onClick={() => setRemoteOnly((v) => !v)}
+                      sx={{ justifyContent: 'flex-start', fontSize: '0.8rem', ...(remoteOnly ? { background: 'linear-gradient(135deg, #1A2E4A, #2B5072)' } : { borderColor: 'divider', color: 'text.secondary' }) }}
+                    >
+                      {remoteOnly ? '✓ Apenas remoto' : 'Apenas remoto'}
+                    </Button>
+                  </Stack>
+                </Card>
+              </Box>
+
+              <Card sx={{ overflow: 'hidden' }}>
+                <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid', borderColor: 'divider' }}>
+                  <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>Exportar</Typography>
+                </Box>
+                <Stack spacing={0.5} sx={{ p: 2 }}>
+                  <Button fullWidth variant="contained" startIcon={<DownloadIcon sx={{ fontSize: '15px !important' }} />} href="/api/download-all"
+                    sx={{ justifyContent: 'flex-start', py: 0.9, fontSize: '0.8rem', background: 'linear-gradient(135deg, #1A2E4A, #2B5072)', '&:hover': { background: 'linear-gradient(135deg, #243F65, #356090)' } }}>
+                    Baixar tudo em ZIP
+                  </Button>
+                  {payload.downloads.length > 0 && <Divider sx={{ my: 0.5 }} />}
+                  {payload.downloads.map((file) => (
+                    <Button key={file.name} href={`/api/download/${encodeURIComponent(file.name)}`}
+                      endIcon={<DownloadIcon sx={{ fontSize: '12px !important' }} />} size="small"
+                      sx={{ justifyContent: 'space-between', color: 'text.secondary', fontWeight: 500, px: 0.5, fontSize: '0.74rem', '&:hover': { color: 'primary.main' } }}>
+                      {file.label}
+                    </Button>
+                  ))}
+                </Stack>
+              </Card>
             </Stack>
           </Grid>
         </Grid>
