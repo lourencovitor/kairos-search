@@ -145,22 +145,9 @@ async function handleRun(response: ServerResponse): Promise<void> {
       runningPromise = null;
     });
 
-  try {
-    const result = await runningPromise;
-    await sendJson(response, {
-      running: false,
-      runId: result.runId,
-      rawJobs: result.totalRawJobs,
-      rankedJobs: result.rankedJobs.length,
-      selectedJobs: result.selectedJobs.length,
-    });
-  } catch (error) {
-    await sendJson(
-      response,
-      { running: false, error: error instanceof Error ? error.message : 'Unknown job research error' },
-      500,
-    );
-  }
+  // Respond immediately so the connection doesn't timeout on slow hosts.
+  // The client should poll /api/status to know when it finishes.
+  await sendJson(response, { running: true, message: 'Job research started.' }, 202);
 }
 
 async function readLatestPayload(): Promise<{

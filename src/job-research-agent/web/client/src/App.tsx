@@ -181,15 +181,38 @@ export default function App({
     setError(null);
     setStatus('Buscando vagas...');
     try {
-      const res  = await fetch('/api/run', { method: 'POST' });
+      const res = await fetch('/api/run', { method: 'POST' });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? data.message ?? 'Falha.');
-      setStatus('Concluído');
-      await loadLatest();
+      if (!res.ok && res.status !== 202) throw new Error(data.error ?? data.message ?? 'Falha.');
+      // Poll /api/status until the run finishes, then reload data.
+      await pollUntilDone();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : 'Falha ao processar vagas.');
-    } finally {
       setRunning(false);
+    }
+  }
+
+  async function pollUntilDone() {
+    const INTERVAL = 5_000;
+    for (;;) {
+      await new Promise<void>((r) => setTimeout(r, INTERVAL));
+      try {
+        const res  = await fetch('/api/status');
+        const data = (await res.json()) as { running: boolean; lastRunError?: string | null };
+        if (data.lastRunError) {
+          setError(data.lastRunError);
+          setRunning(false);
+          return;
+        }
+        if (!data.running) {
+          setStatus('Concluído');
+          setRunning(false);
+          await loadLatest();
+          return;
+        }
+      } catch {
+        // Network blip — keep polling.
+      }
     }
   }
 
