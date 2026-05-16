@@ -436,7 +436,7 @@ export default function App({
               {/* Job list with staggered entrance + feed ads every 5 cards */}
               {!showSkeleton && filteredJobs.length > 0 && filteredJobs.slice(0, 250).map((job, idx) => (
                 <Fragment key={`${listVersion}-${job.id}`}>
-                  {idx > 0 && idx % 5 === 0 && <FeedAdPlaceholder isDark={isDark} />}
+                  {idx > 0 && idx % 5 === 0 && <FeedAdPlaceholder isDark={isDark} adIndex={idx} />}
                   <Box
                     sx={{
                       opacity: 0,
@@ -798,44 +798,45 @@ function LeaderboardAdBanner({ isDark }: { isDark: boolean }) {
   }
 
   return (
-    <Card component="a" href="#" sx={{
+    <Card component="a" href="https://www.rocketseat.com.br" target="_blank" rel="noopener noreferrer" sx={{
       display: 'flex', textDecoration: 'none', mb: 2.5, overflow: 'hidden',
-      borderLeft: 'none', border: '1px solid', borderColor: 'divider',
-      bgcolor: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(248,250,252,0.9)',
+      border: '1px solid', borderColor: isDark ? 'rgba(104,56,255,0.25)' : 'rgba(104,56,255,0.18)',
+      background: isDark
+        ? 'linear-gradient(135deg, #1a0a2e 0%, #2d1458 60%, #1a1a2e 100%)'
+        : 'linear-gradient(135deg, #f5f0ff 0%, #fff7f0 100%)',
       transition: 'box-shadow 0.2s ease',
-      '&:hover': { boxShadow: `0 6px 22px rgba(15,31,46,${isDark ? '0.32' : '0.08'})` },
+      '&:hover': { boxShadow: '0 6px 24px rgba(104,56,255,0.28)' },
     }}>
       <Box sx={{
-        width: { xs: 72, md: 120 }, flexShrink: 0,
-        background: isDark
-          ? 'linear-gradient(135deg, rgba(26,46,74,0.5), rgba(61,126,191,0.3))'
-          : 'linear-gradient(135deg, rgba(26,46,74,0.05), rgba(61,126,191,0.1))',
-        borderRight: '1px dashed', borderColor: 'divider',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        width: { xs: 80, md: 128 }, flexShrink: 0,
+        background: 'linear-gradient(160deg, #6838FF 0%, #FF5500 100%)',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5,
       }}>
-        <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', opacity: 0.35 }}>logo</Typography>
+        <Typography sx={{ fontSize: { xs: '1.8rem', md: '2.2rem' }, lineHeight: 1, userSelect: 'none' }}>🚀</Typography>
+        <Typography sx={{ fontSize: '0.6rem', fontWeight: 800, color: 'rgba(255,255,255,0.85)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Rocketseat</Typography>
       </Box>
-      <Box sx={{ flex: 1, px: { xs: 2, md: 3 }, py: 1.75, display: 'flex', alignItems: 'center', gap: 3 }}>
+      <Box sx={{ flex: 1, px: { xs: 2, md: 3 }, py: 1.75, display: 'flex', alignItems: 'center', gap: 2.5 }}>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Box sx={{ display: 'inline-flex', px: '6px', py: '1px', borderRadius: '3px', bgcolor: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.13)', border: `1px solid rgba(148,163,184,${isDark ? '0.18' : '0.28'})`, mb: 0.6 }}>
-            <Typography sx={{ fontSize: '0.57rem', fontWeight: 700, color: 'text.secondary', letterSpacing: '0.1em', textTransform: 'uppercase', lineHeight: 1.5 }}>Patrocinado</Typography>
+          <Box sx={{ display: 'inline-flex', px: '6px', py: '1px', borderRadius: '3px', bgcolor: 'rgba(104,56,255,0.14)', border: '1px solid rgba(104,56,255,0.3)', mb: 0.6 }}>
+            <Typography sx={{ fontSize: '0.57rem', fontWeight: 700, color: '#8B5CF6', letterSpacing: '0.1em', textTransform: 'uppercase', lineHeight: 1.5 }}>Patrocinado</Typography>
           </Box>
-          <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.85rem', md: '0.95rem' }, color: 'text.primary', lineHeight: 1.35, mb: 0.3 }}>
-            Anuncie para engenheiros e tech leads em busca ativa
+          <Typography sx={{ fontWeight: 800, fontSize: { xs: '0.88rem', md: '1rem' }, color: isDark ? '#fff' : '#1a0a2e', lineHeight: 1.3, mb: 0.3 }}>
+            Do zero ao primeiro emprego — ou do pleno ao sênior
           </Typography>
-          <Typography sx={{ fontSize: '0.75rem', color: 'text.secondary', lineHeight: 1.5, display: { xs: 'none', sm: 'block' } }}>
-            Alcance o público certo — desenvolvedores seniores, arquitetos e líderes técnicos.
+          <Typography sx={{ fontSize: '0.75rem', color: isDark ? 'rgba(255,255,255,0.62)' : '#4B3D70', lineHeight: 1.5, display: { xs: 'none', sm: 'block' } }}>
+            Trilhas práticas com projetos reais e a maior comunidade dev do Brasil.
           </Typography>
         </Box>
-        <Button variant="outlined" size="small" component="span" sx={{
-          flexShrink: 0, fontSize: '0.73rem',
-          borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'divider',
-          color: 'text.secondary', whiteSpace: 'nowrap',
-          '&:hover': { borderColor: 'primary.light', color: 'primary.main' },
-        }}>Anunciar →</Button>
+        <Button variant="contained" size="small" component="span" sx={{
+          flexShrink: 0, fontSize: '0.73rem', fontWeight: 700, textTransform: 'none',
+          background: 'linear-gradient(135deg, #6838FF, #8B5CF6)',
+          whiteSpace: 'nowrap', borderRadius: 2,
+          boxShadow: '0 2px 12px rgba(104,56,255,0.4)',
+          '&:hover': { background: 'linear-gradient(135deg, #5428EE, #7C3AED)', boxShadow: '0 4px 18px rgba(104,56,255,0.5)' },
+        }}>Ver trilhas →</Button>
       </Box>
-      <Box sx={{ px: 1.5, display: 'flex', alignItems: 'center', borderLeft: '1px solid', borderColor: 'divider' }}>
-        <Typography sx={{ fontSize: '0.56rem', color: 'text.secondary', opacity: 0.4, writingMode: 'vertical-rl', letterSpacing: '0.08em' }}>ads via Carbon</Typography>
+      <Box sx={{ px: 1.5, display: 'flex', alignItems: 'center', borderLeft: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(104,56,255,0.15)' }}>
+        <Typography sx={{ fontSize: '0.56rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(104,56,255,0.5)', writingMode: 'vertical-rl', letterSpacing: '0.08em' }}>anúncio</Typography>
       </Box>
     </Card>
   );
@@ -863,31 +864,47 @@ function RightSidebarAdPrimary() {
   }
 
   return (
-    <Card sx={{ overflow: 'hidden' }}>
-      <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>Patrocinado</Typography>
-        <Typography sx={{ fontSize: '0.59rem', color: 'text.secondary', opacity: 0.45 }}>Google Ads</Typography>
+    <Card component="a" href="https://github.com/features/copilot" target="_blank" rel="noopener noreferrer" sx={{
+      overflow: 'hidden', textDecoration: 'none',
+      background: '#0d1117',
+      border: '1px solid rgba(48,54,61,0.9)',
+      transition: 'box-shadow 0.2s',
+      '&:hover': { boxShadow: '0 8px 32px rgba(0,0,0,0.5)' },
+    }}>
+      <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid rgba(48,54,61,0.8)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(139,148,158,1)' }}>Patrocinado</Typography>
+        <Typography sx={{ fontSize: '0.59rem', color: 'rgba(139,148,158,0.55)' }}>GitHub</Typography>
       </Box>
-      <Box sx={{ p: 2 }}>
-        <Box sx={{
-          width: '100%', aspectRatio: '300 / 250', borderRadius: '10px', mb: 1.75,
-          background: 'linear-gradient(135deg, rgba(26,46,74,0.05) 0%, rgba(61,126,191,0.09) 100%)',
-          border: '1.5px dashed', borderColor: 'divider',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 0.5,
-        }}>
-          <Typography sx={{ fontSize: '1.05rem', color: 'text.secondary', opacity: 0.2 }}>⬡</Typography>
-          <Typography sx={{ fontSize: '0.62rem', color: 'text.secondary', opacity: 0.35 }}>300 × 250</Typography>
+      <Box sx={{ p: 2.5 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 2 }}>
+          <Box sx={{
+            width: 42, height: 42, borderRadius: '10px', flexShrink: 0,
+            background: 'linear-gradient(135deg, #6e40c9 0%, #a855f7 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Typography sx={{ fontSize: '1.25rem', lineHeight: 1, userSelect: 'none', color: '#fff' }}>✦</Typography>
+          </Box>
+          <Box>
+            <Typography sx={{ fontWeight: 800, fontSize: '0.93rem', color: '#e6edf3', lineHeight: 1.2 }}>GitHub Copilot</Typography>
+            <Typography sx={{ fontSize: '0.68rem', color: 'rgba(139,148,158,1)' }}>Your AI pair programmer</Typography>
+          </Box>
         </Box>
-        <Typography sx={{ fontSize: '0.83rem', fontWeight: 700, lineHeight: 1.45, color: 'text.primary', mb: 0.6 }}>
-          Leve seu produto para o próximo nível
+        <Typography sx={{ fontSize: '0.82rem', color: '#e6edf3', lineHeight: 1.6, mb: 1.75 }}>
+          Escreva código mais rápido com sugestões inteligentes de IA no seu editor.
         </Typography>
-        <Typography sx={{ fontSize: '0.72rem', color: 'text.secondary', lineHeight: 1.6, mb: 1.5 }}>
-          Anuncie para engenheiros seniores, tech leads e arquitetos em busca ativa.
-        </Typography>
-        <Button fullWidth variant="outlined" size="small" href="#"
-          sx={{ fontSize: '0.75rem', borderColor: 'divider', color: 'text.secondary',
-            '&:hover': { borderColor: 'primary.light', color: 'primary.main', bgcolor: 'transparent' } }}>
-          Anunciar aqui
+        {['Autocomplete em tempo real', 'Chat no VS Code & JetBrains', 'Revisão e explicação de código'].map((feat) => (
+          <Box key={feat} sx={{ display: 'flex', alignItems: 'flex-start', gap: 1, mb: 0.75 }}>
+            <Typography sx={{ fontSize: '0.72rem', color: '#3fb950', lineHeight: 1.55, flexShrink: 0, mt: '1px' }}>✓</Typography>
+            <Typography sx={{ fontSize: '0.72rem', color: 'rgba(139,148,158,1)', lineHeight: 1.55 }}>{feat}</Typography>
+          </Box>
+        ))}
+        <Button fullWidth variant="contained" size="small" component="span" sx={{
+          mt: 2.25, fontSize: '0.75rem', fontWeight: 700, textTransform: 'none',
+          background: 'linear-gradient(135deg, #6e40c9 0%, #a855f7 100%)',
+          borderRadius: 2,
+          '&:hover': { background: 'linear-gradient(135deg, #5a32a3 0%, #9333ea 100%)' },
+        }}>
+          Experimentar grátis
         </Button>
       </Box>
     </Card>
@@ -896,6 +913,8 @@ function RightSidebarAdPrimary() {
 
 function RightSidebarAdSecondary() {
   const ref = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
+  const isDark = theme.palette.mode === 'dark';
 
   useEffect(() => {
     if (!ADS_ENABLED) return;
@@ -916,30 +935,40 @@ function RightSidebarAdSecondary() {
   }
 
   return (
-    <Card sx={{ overflow: 'hidden' }}>
-      <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>Patrocinado</Typography>
-        <Typography sx={{ fontSize: '0.59rem', color: 'text.secondary', opacity: 0.45 }}>Google Ads</Typography>
+    <Card component="a" href="https://vercel.com" target="_blank" rel="noopener noreferrer" sx={{
+      overflow: 'hidden', textDecoration: 'none',
+      bgcolor: isDark ? '#0a0a0a' : '#fff',
+      border: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.08)',
+      transition: 'box-shadow 0.2s',
+      '&:hover': { boxShadow: isDark ? '0 6px 24px rgba(255,255,255,0.08)' : '0 6px 24px rgba(0,0,0,0.12)' },
+    }}>
+      <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.07)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: isDark ? 'rgba(255,255,255,0.45)' : 'rgba(0,0,0,0.4)' }}>Patrocinado</Typography>
+        <Typography sx={{ fontSize: '0.59rem', color: isDark ? 'rgba(255,255,255,0.28)' : 'rgba(0,0,0,0.3)' }}>Vercel</Typography>
       </Box>
-      <Box sx={{ p: 2, display: 'flex', gap: 1.5, alignItems: 'flex-start' }}>
+      <Box sx={{ p: 2.25, display: 'flex', gap: 1.75, alignItems: 'flex-start' }}>
         <Box sx={{
-          width: 52, height: 52, borderRadius: '10px', flexShrink: 0,
-          background: 'linear-gradient(135deg, rgba(26,46,74,0.06), rgba(61,126,191,0.1))',
-          border: '1.5px dashed', borderColor: 'divider',
+          width: 46, height: 46, borderRadius: '10px', flexShrink: 0,
+          bgcolor: isDark ? '#fff' : '#000',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
-          <Typography sx={{ fontSize: '0.55rem', color: 'text.secondary', opacity: 0.35 }}>logo</Typography>
+          <Typography sx={{ fontSize: '1.4rem', lineHeight: 1, userSelect: 'none', color: isDark ? '#000' : '#fff' }}>▲</Typography>
         </Box>
         <Box sx={{ flex: 1, minWidth: 0 }}>
-          <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, color: 'text.primary', lineHeight: 1.4, mb: 0.45 }}>
-            Sua ferramenta dev aqui
+          <Typography sx={{ fontSize: '0.83rem', fontWeight: 800, color: isDark ? '#fff' : '#000', lineHeight: 1.35, mb: 0.5 }}>
+            Deploy em segundos.<br />Escale sem limite.
           </Typography>
-          <Typography sx={{ fontSize: '0.69rem', color: 'text.secondary', lineHeight: 1.55, mb: 1 }}>
-            Alcance um público técnico altamente qualificado.
+          <Typography sx={{ fontSize: '0.7rem', color: isDark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)', lineHeight: 1.55, mb: 1.25 }}>
+            Frontend, serverless e edge — tudo numa plataforma.
           </Typography>
-          <Link href="#" underline="none"
-            sx={{ fontSize: '0.69rem', fontWeight: 700, color: 'primary.main', '&:hover': { color: 'secondary.main' } }}>
-            Saiba mais →
+          <Link href="https://vercel.com" target="_blank" rel="noopener noreferrer" underline="none" sx={{
+            fontSize: '0.7rem', fontWeight: 700,
+            color: isDark ? '#fff' : '#000',
+            borderBottom: `1px solid ${isDark ? 'rgba(255,255,255,0.35)' : 'rgba(0,0,0,0.35)'}`,
+            pb: '1px',
+            '&:hover': { borderBottomColor: isDark ? '#fff' : '#000' },
+          }}>
+            Começar grátis →
           </Link>
         </Box>
       </Box>
@@ -947,38 +976,43 @@ function RightSidebarAdSecondary() {
   );
 }
 
-function SidebarAdPlaceholder() {
-  return (
-    <Card sx={{ overflow: 'hidden', opacity: 0.95 }}>
-      <Box sx={{ px: 2.5, pt: 2, pb: 1.75, borderBottom: '1px solid', borderColor: 'divider', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <Typography sx={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>Patrocinado</Typography>
-        <Typography sx={{ fontSize: '0.59rem', color: 'text.secondary', opacity: 0.5 }}>ads via Carbon</Typography>
-      </Box>
-      <Box sx={{ p: 2 }}>
-        <Box sx={{
-          width: '100%', aspectRatio: '130 / 100', borderRadius: '8px', mb: 1.5,
-          background: 'linear-gradient(135deg, rgba(26,46,74,0.06) 0%, rgba(61,126,191,0.08) 100%)',
-          border: '1.5px dashed', borderColor: 'divider',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-          <Typography sx={{ fontSize: '0.62rem', color: 'text.secondary', opacity: 0.4 }}>130 × 100</Typography>
-        </Box>
-        <Typography sx={{ fontSize: '0.8rem', fontWeight: 700, lineHeight: 1.45, color: 'text.primary', mb: 0.6 }}>
-          Seu produto para devs aqui
-        </Typography>
-        <Typography sx={{ fontSize: '0.71rem', color: 'text.secondary', lineHeight: 1.55, mb: 1.25 }}>
-          Alcance engenheiros e tech leads que buscam oportunidades de topo.
-        </Typography>
-        <Link href="#" underline="none"
-          sx={{ fontSize: '0.71rem', fontWeight: 700, color: 'primary.main', '&:hover': { color: 'secondary.main' } }}>
-          Saiba mais →
-        </Link>
-      </Box>
-    </Card>
-  );
-}
+const FEED_ADS = [
+  {
+    href: 'https://aws.amazon.com/certification/',
+    sponsor: 'AWS',
+    accentColor: '#FF9900',
+    accentBg: 'linear-gradient(135deg, #232F3E 0%, #131921 100%)',
+    icon: '☁',
+    iconColor: '#FF9900',
+    headline: 'Torne-se um AWS Certified Engineer',
+    body: 'Certificações reconhecidas globalmente. Valide suas habilidades em cloud e acelere sua carreira.',
+    cta: 'Ver certificações',
+  },
+  {
+    href: 'https://www.alura.com.br',
+    sponsor: 'Alura',
+    accentColor: '#1DC7EA',
+    accentBg: 'linear-gradient(135deg, #1A1A2E 0%, #16213E 100%)',
+    icon: '🎓',
+    iconColor: '#1DC7EA',
+    headline: 'Aprenda com quem está no mercado',
+    body: 'Mais de 600 cursos de tecnologia, inglês e gestão. Mentoria ao vivo com especialistas.',
+    cta: 'Explorar cursos',
+  },
+  {
+    href: 'https://www.rocketseat.com.br',
+    sponsor: 'Rocketseat',
+    accentColor: '#6838FF',
+    accentBg: 'linear-gradient(135deg, #1a0a2e 0%, #2d1458 100%)',
+    icon: '🚀',
+    iconColor: '#a78bfa',
+    headline: 'Da teoria à prática em semanas',
+    body: 'Trilhas de programação com projetos reais, comunidade ativa e suporte de mentores.',
+    cta: 'Começar trilha',
+  },
+] as const;
 
-function FeedAdPlaceholder({ isDark }: { isDark: boolean }) {
+function FeedAdPlaceholder({ isDark, adIndex }: { isDark: boolean; adIndex: number }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -999,55 +1033,55 @@ function FeedAdPlaceholder({ isDark }: { isDark: boolean }) {
     );
   }
 
+  const ad = FEED_ADS[adIndex % FEED_ADS.length];
+
   return (
-    <Card component="a" href="#" sx={{
+    <Card component="a" href={ad.href} target="_blank" rel="noopener noreferrer" sx={{
       display: 'block', textDecoration: 'none',
-      borderLeft: `4px solid rgba(148,163,184,${isDark ? '0.3' : '0.45'})`,
-      bgcolor: isDark ? 'rgba(15,23,42,0.5)' : 'rgba(248,250,252,0.9)',
+      borderLeft: `4px solid ${ad.accentColor}`,
+      background: isDark ? ad.accentBg : undefined,
+      bgcolor: isDark ? undefined : 'rgba(248,250,252,0.9)',
       transition: 'all 0.2s ease',
       '&:hover': {
-        boxShadow: `0 8px 28px rgba(15,31,46,${isDark ? '0.35' : '0.09'})`,
+        boxShadow: `0 8px 28px rgba(0,0,0,${isDark ? '0.4' : '0.1'})`,
         transform: 'translateY(-1px)',
       },
     }}>
       <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
         <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
           <Box sx={{
-            width: 44, height: 44, borderRadius: '12px', flexShrink: 0,
-            background: isDark
-              ? 'linear-gradient(135deg, rgba(26,46,74,0.4), rgba(61,126,191,0.25))'
-              : 'linear-gradient(135deg, rgba(26,46,74,0.06), rgba(61,126,191,0.1))',
-            border: '1.5px dashed',
-            borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,31,46,0.14)',
+            width: 48, height: 48, borderRadius: '12px', flexShrink: 0,
+            bgcolor: isDark ? 'rgba(255,255,255,0.07)' : `${ad.accentColor}18`,
+            border: `1.5px solid ${ad.accentColor}40`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Typography sx={{ fontSize: '0.54rem', color: 'text.secondary', opacity: 0.4 }}>logo</Typography>
+            <Typography sx={{ fontSize: '1.4rem', lineHeight: 1, userSelect: 'none' }}>{ad.icon}</Typography>
           </Box>
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.5, mb: 0.5 }}>
-              <Box sx={{ px: '6px', py: '1px', borderRadius: '3px', bgcolor: isDark ? 'rgba(148,163,184,0.1)' : 'rgba(148,163,184,0.12)', border: `1px solid rgba(148,163,184,${isDark ? '0.2' : '0.28'})` }}>
-                <Typography sx={{ fontSize: '0.57rem', fontWeight: 700, color: 'text.secondary', lineHeight: 1.5, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Patrocinado</Typography>
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+              <Box sx={{ px: '6px', py: '1px', borderRadius: '3px', bgcolor: `${ad.accentColor}18`, border: `1px solid ${ad.accentColor}40` }}>
+                <Typography sx={{ fontSize: '0.57rem', fontWeight: 700, color: ad.accentColor, lineHeight: 1.5, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Patrocinado</Typography>
               </Box>
+              <Typography sx={{ fontSize: '0.6rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'text.secondary', fontWeight: 600 }}>{ad.sponsor}</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: 'text.primary', lineHeight: 1.35, mb: 0.35 }}>
-              Divulgue sua vaga ou produto para devs
+            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: isDark ? '#fff' : 'text.primary', lineHeight: 1.35, mb: 0.35 }}>
+              {ad.headline}
             </Typography>
-            <Typography sx={{ fontSize: '0.8rem', color: 'text.secondary', lineHeight: 1.5 }}>
-              Alcance engenheiros seniores e tech leads em busca ativa — público altamente qualificado.
+            <Typography sx={{ fontSize: '0.78rem', color: isDark ? 'rgba(255,255,255,0.6)' : 'text.secondary', lineHeight: 1.55 }}>
+              {ad.body}
             </Typography>
           </Box>
 
-          <Stack sx={{ alignItems: 'flex-end', gap: 0.75, flexShrink: 0 }}>
-            <Button variant="outlined" size="small" component="span" sx={{
-              fontSize: '0.73rem', borderColor: isDark ? 'rgba(255,255,255,0.12)' : 'divider',
-              color: 'text.secondary', whiteSpace: 'nowrap',
-              '&:hover': { borderColor: 'primary.light', color: 'primary.main' },
-            }}>
-              Anunciar →
-            </Button>
-            <Typography sx={{ fontSize: '0.6rem', color: 'text.secondary', opacity: 0.45 }}>ads via Carbon</Typography>
-          </Stack>
+          <Button variant="contained" size="small" component="span" sx={{
+            flexShrink: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'none',
+            whiteSpace: 'nowrap', borderRadius: 2,
+            bgcolor: ad.accentColor,
+            '&:hover': { bgcolor: ad.accentColor, filter: 'brightness(1.15)' },
+            boxShadow: `0 2px 10px ${ad.accentColor}50`,
+          }}>
+            {ad.cta} →
+          </Button>
         </Stack>
       </CardContent>
     </Card>
