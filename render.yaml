@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: kairos
+    runtime: node
+    plan: free
+    buildCommand: pnpm install && pnpm build:client
+    startCommand: NODE_ENV=production pnpm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DISABLE_BROWSER
+        value: "true"
+      - key: PORT
+        generateValue: false
+      # AdSense — preencha após aprovação
+      # - key: VITE_ADSENSE_CLIENT
+      #   value: ca-pub-XXXXXXXXXXXXXXXX

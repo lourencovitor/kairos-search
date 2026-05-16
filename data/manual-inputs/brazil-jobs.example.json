@@ -1,0 +1,78 @@
+{
+  "defaults": {
+    "source": "brazil-curated",
+    "sourceFocus": "brazil",
+    "sourceTier": "manual_curated",
+    "sourceQualityRank": 10,
+    "notes": [
+      "Brazil-first curated input. Keep the original company careers link whenever possible."
+    ]
+  },
+  "jobs": [
+    {
+      "companyName": "Example Brazil Remote Co",
+      "title": "Senior Software Engineer",
+      "url": "https://careers.example.com/jobs/brazil-remote-senior-software-engineer",
+      "locationText": "Remote / Brazil",
+      "descriptionText": "Strong backend and cloud role for engineers based in Brazil. Public careers page link captured manually.",
+      "employmentType": "Full-time",
+      "publishedAt": "2026-05-03T00:00:00Z",
+      "marketHint": "brazil",
+      "remotePolicyHint": "remote",
+      "regionHints": [
+        "Brazil"
+      ],
+      "tags": [
+        "typescript",
+        "node",
+        "aws",
+        "remote"
+      ]
+    },
+    {
+      "companyName": "Example Sao Paulo Platform Team",
+      "title": "Cloud Architect",
+      "url": "https://careers.example.com/jobs/cloud-architect-sao-paulo",
+      "locationText": "Hybrid / Sao Paulo, Brazil",
+      "descriptionText": "Hybrid architecture role based in Sao Paulo with cloud modernization responsibilities.",
+      "employmentType": "Full-time",
+      "publishedAt": "2026-05-03T00:00:00Z",
+      "marketHint": "brazil",
+      "remotePolicyHint": "hybrid",
+      "regionHints": [
+        "Sao Paulo",
+        "Brazil"
+      ],
+      "tags": [
+        "aws",
+        "kubernetes",
+        "architecture",
+        "hybrid"
+      ]
+    },
+    {
+      "companyName": "Example LATAM Remote Company",
+      "title": "Solutions Architect",
+      "url": "https://careers.example.com/jobs/latam-solutions-architect",
+      "locationText": "Remote / LATAM",
+      "descriptionText": "Remote LATAM role confirmed to accept candidates based in Brazil.",
+      "employmentType": "Full-time",
+      "publishedAt": "2026-05-03T00:00:00Z",
+      "marketHint": "latam",
+      "remotePolicyHint": "remote",
+      "regionHints": [
+        "LATAM",
+        "South America"
+      ],
+      "notes": [
+        "Confirmed in manual review that Brazil-based candidates are accepted."
+      ],
+      "tags": [
+        "cloud",
+        "terraform",
+        "remote",
+        "latam"
+      ]
+    }
+  ]
+}

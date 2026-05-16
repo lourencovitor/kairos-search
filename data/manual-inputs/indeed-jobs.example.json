@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "source": "indeed-alert",
+    "sourceFocus": "global",
+    "sourceTier": "manual_curated",
+    "sourceQualityRank": 10,
+    "notes": [
+      "Manual intake only. No Indeed scraping is performed."
+    ]
+  },
+  "jobs": [
+    {
+      "companyName": "Example Platform Company",
+      "title": "Senior TypeScript Engineer",
+      "url": "https://www.indeed.com/viewjob?jk=example",
+      "locationText": "Remote / Brazil",
+      "descriptionText": "Backend platform role with TypeScript, NestJS, AWS, Postgres, Redis, and microservices.",
+      "employmentType": "Full-time",
+      "publishedAt": "2026-05-03T00:00:00Z",
+      "marketHint": "brazil_friendly",
+      "remotePolicyHint": "remote",
+      "regionHints": [
+        "Brazil"
+      ],
+      "notes": [
+        "Captured from a manual Indeed alert review."
+      ],
+      "tags": [
+        "typescript",
+        "nestjs",
+        "aws",
+        "postgres",
+        "redis",
+        "microservices"
+      ]
+    }
+  ]
+}

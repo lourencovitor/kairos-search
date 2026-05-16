@@ -1,0 +1,29 @@
+node_modules
+dist
+.pnpm-store
+
+# Build output
+src/job-research-agent/web/client/dist
+
+# Runtime data
+data/job-research
+data/manual-inputs/*.json
+!data/manual-inputs/*.example.json
+
+# Local env & secrets
+.env.local
+.env*.local
+
+# Tool dirs
+.claude
+.kiro
+.playwright-cli
+
+# Screenshots
+*.png
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode

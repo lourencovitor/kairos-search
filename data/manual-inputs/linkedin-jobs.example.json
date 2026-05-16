@@ -1,0 +1,35 @@
+{
+  "defaults": {
+    "source": "linkedin-alert",
+    "sourceFocus": "global",
+    "sourceTier": "manual_curated",
+    "sourceQualityRank": 10,
+    "notes": [
+      "Manual intake only. No LinkedIn scraping is performed."
+    ]
+  },
+  "jobs": [
+    {
+      "companyName": "Example Remote Company",
+      "title": "Senior Software Engineer",
+      "url": "https://www.linkedin.com/jobs/view/example",
+      "locationText": "Remote / Brazil",
+      "descriptionText": "Paste the job alert email summary or manually captured notes here. No scraping is performed.",
+      "employmentType": "Full-time",
+      "publishedAt": "2026-05-03T00:00:00Z",
+      "marketHint": "brazil_friendly",
+      "remotePolicyHint": "remote",
+      "regionHints": [
+        "Brazil"
+      ],
+      "notes": [
+        "Captured from a manual job alert review."
+      ],
+      "tags": [
+        "typescript",
+        "aws",
+        "remote"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,38 @@
+{
+  "defaults": {
+    "source": "wellfound-alert",
+    "sourceFocus": "global",
+    "sourceTier": "manual_curated",
+    "sourceQualityRank": 10,
+    "notes": [
+      "Manual intake only. No Wellfound scraping is performed."
+    ]
+  },
+  "jobs": [
+    {
+      "companyName": "Example Startup",
+      "title": "Staff Frontend Architect",
+      "url": "https://wellfound.com/jobs/example",
+      "locationText": "Remote / LATAM",
+      "descriptionText": "Frontend platform role with React, TypeScript, micro frontends, AWS, and Terraform.",
+      "employmentType": "Full-time",
+      "publishedAt": "2026-05-03T00:00:00Z",
+      "marketHint": "latam",
+      "remotePolicyHint": "remote",
+      "regionHints": [
+        "LATAM",
+        "Brazil"
+      ],
+      "notes": [
+        "Captured from a manual Wellfound review."
+      ],
+      "tags": [
+        "reactjs",
+        "typescript",
+        "micro-frontends",
+        "aws",
+        "terraform"
+      ]
+    }
+  ]
+}
