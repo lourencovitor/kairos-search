@@ -10,8 +10,6 @@ services:
         value: production
       - key: DISABLE_BROWSER
         value: "true"
-      - key: PORT
-        generateValue: false
       # AdSense — preencha após aprovação
       # - key: VITE_ADSENSE_CLIENT
       #   value: ca-pub-XXXXXXXXXXXXXXXX

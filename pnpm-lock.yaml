@@ -39,9 +39,6 @@ importers:
         specifier: ^8.0.13
         version: 8.0.13(@types/node@22.19.17)(esbuild@0.27.7)(tsx@4.21.0)
     devDependencies:
-      '@rolldown/binding-darwin-arm64':
-        specifier: ^1.0.1
-        version: 1.0.1
       '@types/node':
         specifier: ^22.15.21
         version: 22.19.17
@@ -2008,7 +2005,8 @@ snapshots:
   '@rolldown/binding-android-arm64@1.0.1':
     optional: true
 
-  '@rolldown/binding-darwin-arm64@1.0.1': {}
+  '@rolldown/binding-darwin-arm64@1.0.1':
+    optional: true
 
   '@rolldown/binding-darwin-x64@1.0.1':
     optional: true
