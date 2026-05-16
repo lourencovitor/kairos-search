@@ -150,6 +150,36 @@ async function handleRun(response: ServerResponse): Promise<void> {
   await sendJson(response, { running: true, message: 'Job research started.' }, 202);
 }
 
+const MAX_JOB_AGE_DAYS = 14;
+
+function filterStaleJobs(jobs: JobOpportunity[]): JobOpportunity[] {
+  const now = Date.now();
+  const cutoffMs = MAX_JOB_AGE_DAYS * 86_400_000;
+  const seen = new Set<string>();
+  const result: JobOpportunity[] = [];
+
+  for (const job of jobs) {
+    // Drop jobs older than MAX_JOB_AGE_DAYS using the freshest available date.
+    const bestDate = [job.updatedAt, job.publishedAt, job.discoveredAt]
+      .map((d) => (d ? Date.parse(d) : NaN))
+      .find((t) => !Number.isNaN(t));
+    if (bestDate !== undefined && now - bestDate > cutoffMs) {
+      continue;
+    }
+
+    // Drop exact URL duplicates (same job from two sources).
+    const urlKey = (job.url ?? '').toLowerCase().replace(/[/?#]$/, '');
+    if (urlKey && seen.has(urlKey)) {
+      continue;
+    }
+    if (urlKey) seen.add(urlKey);
+
+    result.push(job);
+  }
+
+  return result;
+}
+
 async function readLatestPayload(): Promise<{
   summary: { generatedAt?: string } | null;
   jobs: JobOpportunity[];
@@ -163,12 +193,14 @@ async function readLatestPayload(): Promise<{
     readJsonOrNull(path.join(latestDir, 'filter-funnel.json')),
   ]);
   const downloads = await listDownloads(summary?.generatedAt);
+  const allJobs = rankedJobs ?? selectedJobs ?? [];
+  const freshJobs = filterStaleJobs(allJobs);
 
   return {
     summary,
     // Per-group CSVs are built from ranked jobs, not only from the final
     // selected report slice. Use ranked jobs so the UI counts match downloads.
-    jobs: rankedJobs ?? selectedJobs ?? [],
+    jobs: freshJobs,
     downloads,
     funnel,
   };

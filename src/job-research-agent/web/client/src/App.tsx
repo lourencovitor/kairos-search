@@ -8,7 +8,7 @@ declare global {
   }
 }
 import {
-  Alert, AppBar, Box, Button, Card, CardContent, CircularProgress, Collapse,
+  Alert, AppBar, Box, Button, Card, CardContent, Collapse,
   Container, Divider, FormControl, GlobalStyles, Grid, IconButton,
   InputAdornment, InputLabel, LinearProgress, Link, MenuItem,
   Select, Skeleton, Slider, Stack, TextField, Toolbar, Tooltip, Typography,
@@ -19,7 +19,6 @@ import DarkModeIcon    from '@mui/icons-material/DarkMode';
 import DownloadIcon    from '@mui/icons-material/Download';
 import LightModeIcon   from '@mui/icons-material/LightMode';
 import OpenInNewIcon   from '@mui/icons-material/OpenInNew';
-import PlayArrowIcon   from '@mui/icons-material/PlayArrow';
 import RefreshIcon     from '@mui/icons-material/Refresh';
 import SearchIcon      from '@mui/icons-material/Search';
 import TrackChangesIcon from '@mui/icons-material/TrackChanges';
@@ -144,7 +143,6 @@ export default function App({
   const [score, setScore]         = useState(0);
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [loading, setLoading]     = useState(true);
-  const [running, setRunning]     = useState(false);
   const [status, setStatus]       = useState('Carregando...');
   const [error, setError]         = useState<string | null>(null);
   const [listVersion, setListVersion] = useState(0);
@@ -173,46 +171,6 @@ export default function App({
       setError(cause instanceof Error ? cause.message : 'Falha ao carregar.');
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function runResearch() {
-    setRunning(true);
-    setError(null);
-    setStatus('Buscando vagas...');
-    try {
-      const res = await fetch('/api/run', { method: 'POST' });
-      const data = await res.json();
-      if (!res.ok && res.status !== 202) throw new Error(data.error ?? data.message ?? 'Falha.');
-      // Poll /api/status until the run finishes, then reload data.
-      await pollUntilDone();
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : 'Falha ao processar vagas.');
-      setRunning(false);
-    }
-  }
-
-  async function pollUntilDone() {
-    const INTERVAL = 5_000;
-    for (;;) {
-      await new Promise<void>((r) => setTimeout(r, INTERVAL));
-      try {
-        const res  = await fetch('/api/status');
-        const data = (await res.json()) as { running: boolean; lastRunError?: string | null };
-        if (data.lastRunError) {
-          setError(data.lastRunError);
-          setRunning(false);
-          return;
-        }
-        if (!data.running) {
-          setStatus('Concluído');
-          setRunning(false);
-          await loadLatest();
-          return;
-        }
-      } catch {
-        // Network blip — keep polling.
-      }
     }
   }
 
@@ -285,7 +243,7 @@ export default function App({
 
           {/* Status */}
           <Stack direction="row" sx={{ alignItems: 'center', gap: 0.75, display: { xs: 'none', md: 'flex' } }}>
-            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: running ? '#F59E0B' : loading ? '#94A3B8' : '#22C55E' }} />
+            <Box sx={{ width: 6, height: 6, borderRadius: '50%', bgcolor: loading ? '#94A3B8' : '#22C55E' }} />
             <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.7rem' }}>{status}</Typography>
           </Stack>
 
@@ -315,29 +273,10 @@ export default function App({
           >
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>Atualizar</Box>
           </Button>
-          <Button
-            variant="contained" size="small"
-            startIcon={running ? <CircularProgress size={13} sx={{ color: 'rgba(255,255,255,0.7)' }} /> : <PlayArrowIcon sx={{ fontSize: '16px !important' }} />}
-            disabled={running} onClick={() => void runResearch()}
-            sx={{
-              fontSize: '0.78rem',
-              minWidth: { xs: 36, sm: 'auto' },
-              px: { xs: 1, sm: 1.5 },
-              '& .MuiButton-startIcon': { mr: { xs: 0, sm: 0.5 } },
-              background: 'linear-gradient(135deg, #1A2E4A, #2B5072)',
-              '&:hover': { background: 'linear-gradient(135deg, #243F65, #356090)' },
-              '&.Mui-disabled': {
-                background: 'linear-gradient(135deg, #1A2E4A, #2B5072)',
-                opacity: 0.55, color: 'rgba(255,255,255,0.75)',
-              },
-            }}
-          >
-            <Box sx={{ display: { xs: 'none', sm: 'block' } }}>{running ? 'Processando...' : 'Nova busca'}</Box>
-          </Button>
         </Toolbar>
       </AppBar>
 
-      {(loading || running) && (
+      {loading && (
         <LinearProgress
           sx={{
             bgcolor: 'transparent',
