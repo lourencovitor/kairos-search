@@ -10,7 +10,7 @@ export default defineConfig({
   root: clientDir,
   plugins: [react()],
   build: {
-    outDir: resolve(clientDir, 'dist'),
+    outDir: resolve(__dirname, 'dist'),
     emptyOutDir: true,
   },
 });

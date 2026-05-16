@@ -10,7 +10,7 @@ import type { JobOpportunity, JobResearchRunResult } from '../domain/job.types.j
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const clientDir = path.join(__dirname, 'client');
-const distDir   = path.join(clientDir, 'dist');
+const distDir   = path.join(process.cwd(), 'dist');
 
 const isProd   = process.env.NODE_ENV === 'production';
 const port     = Number(process.env.PORT     ?? 3355);
