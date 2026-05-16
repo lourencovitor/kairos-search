@@ -304,7 +304,17 @@ export default function App({
           <Grid container>
             {topStats.map((stat, i) => (
               <Grid key={stat.label} size={{ xs: 6, sm: 3 }}>
-                <Box sx={{ px: { xs: 2.5, md: 4 }, py: { xs: 2.5, md: 3.25 }, borderLeft: i > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none' }}>
+                <Box sx={{
+                  px: { xs: 2, sm: 2.5, md: 4 }, py: { xs: 2.25, md: 3.25 },
+                  borderLeft: {
+                    xs: i % 2 !== 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                    sm: i > 0 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                  },
+                  borderTop: {
+                    xs: i >= 2 ? '1px solid rgba(255,255,255,0.07)' : 'none',
+                    sm: 'none',
+                  },
+                }}>
                   <Typography sx={{ fontSize: '0.56rem', fontWeight: 700, letterSpacing: '0.18em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.32)', mb: 0.75 }}>
                     {stat.label}
                   </Typography>
@@ -711,8 +721,8 @@ function JobCard({ job, isDark }: { job: JobOpportunity; isDark: boolean }) {
         transform: 'translateY(-2px)',
       },
     }}>
-      <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-        <Stack direction="row" spacing={2} sx={{ alignItems: 'flex-start' }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 }, '&:last-child': { pb: { xs: 2, sm: 3 } } }}>
+        <Stack direction="row" spacing={{ xs: 1.5, sm: 2 }} sx={{ alignItems: 'flex-start' }}>
 
           <CompanyAvatar name={job.companyName} highlight={job.score >= 80} />
 
@@ -721,18 +731,18 @@ function JobCard({ job, isDark }: { job: JobOpportunity; isDark: boolean }) {
             <Link href={job.url} target="_blank" rel="noreferrer" underline="none" sx={{ display: 'block', mb: 0.4 }}>
               <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
                 <Typography sx={{
-                  fontWeight: 700, fontSize: '1rem', lineHeight: 1.3, letterSpacing: '-0.015em',
+                  fontWeight: 700, fontSize: { xs: '0.93rem', sm: '1rem' }, lineHeight: 1.3, letterSpacing: '-0.015em',
                   color: 'text.primary', transition: 'color 0.15s',
                   '&:hover': { color: 'primary.main' },
                 }}>
                   {job.title}
                 </Typography>
-                <OpenInNewIcon sx={{ fontSize: 11, color: 'text.secondary', flexShrink: 0, opacity: 0.5 }} />
+                <OpenInNewIcon sx={{ fontSize: 11, color: 'text.secondary', flexShrink: 0, opacity: 0.5, display: { xs: 'none', sm: 'block' } }} />
               </Stack>
             </Link>
 
             {/* Company · meta */}
-            <Typography sx={{ fontSize: '0.84rem', mb: 1.1, lineHeight: 1.4 }}>
+            <Typography sx={{ fontSize: { xs: '0.78rem', sm: '0.84rem' }, mb: 1, lineHeight: 1.4 }}>
               <Box component="span" sx={{ fontWeight: 600, color: 'secondary.main' }}>{job.companyName}</Box>
               {metaParts && (
                 <Box component="span" sx={{ color: 'text.secondary' }}>{' · '}{metaParts}</Box>
@@ -753,19 +763,33 @@ function JobCard({ job, isDark }: { job: JobOpportunity; isDark: boolean }) {
                 </Box>
               ))}
             </Stack>
+
+            {/* Mobile-only: salary + source/date below tags */}
+            {(job.salaryText || rightMeta) && (
+              <Stack direction="row" spacing={1} sx={{ mt: 0.9, alignItems: 'center', flexWrap: 'wrap', display: { xs: 'flex', sm: 'none' } }}>
+                {job.salaryText && (
+                  <Box sx={{ px: '7px', py: '2px', borderRadius: '4px', bgcolor: salaryBg, border: `1px solid ${salaryBorder}` }}>
+                    <Typography sx={{ fontSize: '0.62rem', fontWeight: 700, color: salaryText, lineHeight: 1.4 }}>
+                      {formatSalary(job.salaryText)}
+                    </Typography>
+                  </Box>
+                )}
+                <Typography sx={{ fontSize: '0.61rem', color: 'text.secondary', opacity: 0.7 }}>{rightMeta}</Typography>
+              </Stack>
+            )}
           </Box>
 
-          {/* Right panel */}
+          {/* Right panel — badge only on xs, full on sm+ */}
           <Stack sx={{ alignItems: 'flex-end', gap: 0.75, flexShrink: 0 }}>
             <ScoreBadge score={job.score} />
             {job.salaryText && (
-              <Box sx={{ px: '9px', py: '3px', borderRadius: '5px', bgcolor: salaryBg, border: `1px solid ${salaryBorder}`, maxWidth: 130 }}>
+              <Box sx={{ display: { xs: 'none', sm: 'block' }, px: '9px', py: '3px', borderRadius: '5px', bgcolor: salaryBg, border: `1px solid ${salaryBorder}`, maxWidth: 130 }}>
                 <Typography sx={{ fontSize: '0.67rem', fontWeight: 700, color: salaryText, lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {formatSalary(job.salaryText)}
                 </Typography>
               </Box>
             )}
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '0.63rem', whiteSpace: 'nowrap', opacity: 0.75 }}>
+            <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' }, color: 'text.secondary', fontSize: '0.63rem', whiteSpace: 'nowrap', opacity: 0.75 }}>
               {rightMeta}
             </Typography>
           </Stack>
@@ -831,11 +855,12 @@ function LeaderboardAdBanner({ isDark }: { isDark: boolean }) {
           flexShrink: 0, fontSize: '0.73rem', fontWeight: 700, textTransform: 'none',
           background: 'linear-gradient(135deg, #6838FF, #8B5CF6)',
           whiteSpace: 'nowrap', borderRadius: 2,
+          display: { xs: 'none', sm: 'flex' },
           boxShadow: '0 2px 12px rgba(104,56,255,0.4)',
           '&:hover': { background: 'linear-gradient(135deg, #5428EE, #7C3AED)', boxShadow: '0 4px 18px rgba(104,56,255,0.5)' },
         }}>Ver trilhas →</Button>
       </Box>
-      <Box sx={{ px: 1.5, display: 'flex', alignItems: 'center', borderLeft: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(104,56,255,0.15)' }}>
+      <Box sx={{ px: 1.5, display: { xs: 'none', sm: 'flex' }, alignItems: 'center', borderLeft: '1px solid', borderColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(104,56,255,0.15)' }}>
         <Typography sx={{ fontSize: '0.56rem', color: isDark ? 'rgba(255,255,255,0.3)' : 'rgba(104,56,255,0.5)', writingMode: 'vertical-rl', letterSpacing: '0.08em' }}>anúncio</Typography>
       </Box>
     </Card>
@@ -1047,35 +1072,39 @@ function FeedAdPlaceholder({ isDark, adIndex }: { isDark: boolean; adIndex: numb
         transform: 'translateY(-1px)',
       },
     }}>
-      <CardContent sx={{ p: 3, '&:last-child': { pb: 3 } }}>
-        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 }, '&:last-child': { pb: { xs: 2, sm: 3 } } }}>
+        <Stack direction="row" spacing={{ xs: 1.5, sm: 2 }} sx={{ alignItems: 'center' }}>
           <Box sx={{
-            width: 48, height: 48, borderRadius: '12px', flexShrink: 0,
+            width: { xs: 40, sm: 48 }, height: { xs: 40, sm: 48 }, borderRadius: '12px', flexShrink: 0,
             bgcolor: isDark ? 'rgba(255,255,255,0.07)' : `${ad.accentColor}18`,
             border: `1.5px solid ${ad.accentColor}40`,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <Typography sx={{ fontSize: '1.4rem', lineHeight: 1, userSelect: 'none' }}>{ad.icon}</Typography>
+            <Typography sx={{ fontSize: { xs: '1.2rem', sm: '1.4rem' }, lineHeight: 1, userSelect: 'none' }}>{ad.icon}</Typography>
           </Box>
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
-            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, mb: 0.5 }}>
+            <Box sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, mb: 0.4 }}>
               <Box sx={{ px: '6px', py: '1px', borderRadius: '3px', bgcolor: `${ad.accentColor}18`, border: `1px solid ${ad.accentColor}40` }}>
                 <Typography sx={{ fontSize: '0.57rem', fontWeight: 700, color: ad.accentColor, lineHeight: 1.5, letterSpacing: '0.1em', textTransform: 'uppercase' }}>Patrocinado</Typography>
               </Box>
               <Typography sx={{ fontSize: '0.6rem', color: isDark ? 'rgba(255,255,255,0.4)' : 'text.secondary', fontWeight: 600 }}>{ad.sponsor}</Typography>
             </Box>
-            <Typography sx={{ fontWeight: 700, fontSize: '0.95rem', color: isDark ? '#fff' : 'text.primary', lineHeight: 1.35, mb: 0.35 }}>
+            <Typography sx={{ fontWeight: 700, fontSize: { xs: '0.88rem', sm: '0.95rem' }, color: isDark ? '#fff' : 'text.primary', lineHeight: 1.35, mb: 0.3 }}>
               {ad.headline}
             </Typography>
-            <Typography sx={{ fontSize: '0.78rem', color: isDark ? 'rgba(255,255,255,0.6)' : 'text.secondary', lineHeight: 1.55 }}>
+            <Typography sx={{ fontSize: { xs: '0.74rem', sm: '0.78rem' }, color: isDark ? 'rgba(255,255,255,0.6)' : 'text.secondary', lineHeight: 1.5, display: { xs: 'none', sm: 'block' } }}>
               {ad.body}
+            </Typography>
+            <Typography sx={{ fontSize: '0.72rem', color: ad.accentColor, fontWeight: 700, mt: 0.5, display: { xs: 'block', sm: 'none' } }}>
+              {ad.cta} →
             </Typography>
           </Box>
 
           <Button variant="contained" size="small" component="span" sx={{
             flexShrink: 0, fontSize: '0.72rem', fontWeight: 700, textTransform: 'none',
             whiteSpace: 'nowrap', borderRadius: 2,
+            display: { xs: 'none', sm: 'flex' },
             bgcolor: ad.accentColor,
             '&:hover': { bgcolor: ad.accentColor, filter: 'brightness(1.15)' },
             boxShadow: `0 2px 10px ${ad.accentColor}50`,
