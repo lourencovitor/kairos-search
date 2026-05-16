@@ -1,8 +1,10 @@
 node_modules
 .pnpm-store
 
-# Runtime data
-data/job-research
+# Runtime data — only exclude large intermediate files and historical runs
+data/job-research/runs/
+data/job-research/latest/raw-jobs.json
+data/job-research/latest/rejected-jobs.json
 data/manual-inputs/*.json
 !data/manual-inputs/*.example.json
 
