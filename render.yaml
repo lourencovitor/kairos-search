@@ -3,8 +3,8 @@ services:
     name: kairos
     runtime: node
     plan: free
-    buildCommand: npm install -g pnpm && pnpm install && pnpm build:client
-    startCommand: NODE_ENV=production pnpm start
+    buildCommand: pnpm install --prod
+    startCommand: NODE_ENV=production node_modules/.bin/tsx src/job-research-agent/web/server.ts
     envVars:
       - key: NODE_ENV
         value: production
