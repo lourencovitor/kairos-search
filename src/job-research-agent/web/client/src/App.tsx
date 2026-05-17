@@ -647,6 +647,13 @@ function scoreColors(score: number): { bg: string; text: string; stroke: string;
   return { bg: '#F1F5F9', text: '#475569', stroke: '#94A3B8', track: '#94A3B822' };
 }
 
+function scoreRangeLabel(score: number): string {
+  if (score >= 75) return 'Alta aderência';
+  if (score >= 55) return 'Boa aderência';
+  if (score >= 35) return 'Aderência média';
+  return 'Aderência baixa';
+}
+
 function ScoreBadge({ score }: { score: number }) {
   const [live, setLive] = useState(0);
 
@@ -681,10 +688,43 @@ function ScoreBadge({ score }: { score: number }) {
         />
       </svg>
       <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <Typography sx={{ fontWeight: 900, fontSize: '1rem', lineHeight: 1, color: sc.text }}>
-          {score}
-        </Typography>
+        <Box sx={{ textAlign: 'center' }}>
+          <Typography sx={{ fontWeight: 900, fontSize: '0.93rem', lineHeight: 1, color: sc.text }}>
+            {score}
+          </Typography>
+          <Typography sx={{ fontSize: '0.43rem', fontWeight: 800, letterSpacing: '0.06em', textTransform: 'uppercase', color: sc.text, opacity: 0.65, lineHeight: 1, mt: '2px' }}>
+            fit
+          </Typography>
+        </Box>
       </Box>
+    </Box>
+  );
+}
+
+function JobAttributeBadge({ remotePolicy, jobMarket, isDark }: { remotePolicy: string; jobMarket: string; isDark: boolean }) {
+  let label = '';
+  let bg = '';
+  let color = '';
+
+  if (remotePolicy === 'remote') {
+    label = 'Remoto';   bg = isDark ? 'rgba(5,150,105,0.2)'   : '#D1FAE5'; color = isDark ? '#34D399' : '#065F46';
+  } else if (jobMarket === 'international') {
+    label = 'Global';   bg = isDark ? 'rgba(59,130,246,0.2)'  : '#DBEAFE'; color = isDark ? '#60A5FA' : '#1E3A5F';
+  } else if (remotePolicy === 'hybrid') {
+    label = 'Híbrido';  bg = isDark ? 'rgba(100,116,139,0.2)' : '#F1F5F9'; color = isDark ? '#94A3B8' : '#475569';
+  } else if (jobMarket === 'brazil_friendly') {
+    label = 'BR ok';    bg = isDark ? 'rgba(139,92,246,0.2)'  : '#EDE9FE'; color = isDark ? '#A78BFA' : '#4C1D95';
+  } else if (jobMarket === 'latam') {
+    label = 'LATAM';    bg = isDark ? 'rgba(245,158,11,0.2)'  : '#FEF3C7'; color = isDark ? '#FCD34D' : '#92400E';
+  } else {
+    return null;
+  }
+
+  return (
+    <Box sx={{ px: '5px', py: '1.5px', borderRadius: '3px', bgcolor: bg, textAlign: 'center', width: '100%' }}>
+      <Typography sx={{ fontSize: '0.49rem', fontWeight: 700, color, lineHeight: 1.4, letterSpacing: '0.01em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {label}
+      </Typography>
     </Box>
   );
 }
@@ -724,7 +764,10 @@ function JobCard({ job, isDark }: { job: JobOpportunity; isDark: boolean }) {
       <CardContent sx={{ p: { xs: 2, sm: 3 }, '&:last-child': { pb: { xs: 2, sm: 3 } } }}>
         <Stack direction="row" spacing={{ xs: 1.5, sm: 2 }} sx={{ alignItems: 'flex-start' }}>
 
-          <CompanyAvatar name={job.companyName} highlight={job.score >= 80} />
+          <Stack sx={{ alignItems: 'center', gap: 0.6, flexShrink: 0, width: 44 }}>
+            <CompanyAvatar name={job.companyName} highlight={job.score >= 80} />
+            <JobAttributeBadge remotePolicy={job.remotePolicy} jobMarket={job.jobMarket} isDark={isDark} />
+          </Stack>
 
           <Box sx={{ flex: 1, minWidth: 0 }}>
             {/* Title */}
@@ -781,7 +824,27 @@ function JobCard({ job, isDark }: { job: JobOpportunity; isDark: boolean }) {
 
           {/* Right panel — badge only on xs, full on sm+ */}
           <Stack sx={{ alignItems: 'flex-end', gap: 0.75, flexShrink: 0 }}>
-            <ScoreBadge score={job.score} />
+            <Tooltip
+              arrow
+              placement="left"
+              title={
+                <Box sx={{ p: 0.25 }}>
+                  <Typography sx={{ fontWeight: 700, fontSize: '0.76rem', display: 'block', mb: 0.5 }}>
+                    Score de aderência · {job.score}/100
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.71rem', color: scoreColors(job.score).stroke, fontWeight: 600, display: 'block', mb: 0.5 }}>
+                    ● {scoreRangeLabel(job.score)}
+                  </Typography>
+                  <Typography sx={{ fontSize: '0.67rem', color: 'rgba(255,255,255,0.65)', lineHeight: 1.6, display: 'block' }}>
+                    Calculado com base em stack técnica, nível de senioridade, mercado e política de trabalho.
+                  </Typography>
+                </Box>
+              }
+            >
+              <Box sx={{ cursor: 'help' }}>
+                <ScoreBadge score={job.score} />
+              </Box>
+            </Tooltip>
             {job.salaryText && (
               <Box sx={{ display: { xs: 'none', sm: 'block' }, px: '9px', py: '3px', borderRadius: '5px', bgcolor: salaryBg, border: `1px solid ${salaryBorder}`, maxWidth: 130 }}>
                 <Typography sx={{ fontSize: '0.67rem', fontWeight: 700, color: salaryText, lineHeight: 1.4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
