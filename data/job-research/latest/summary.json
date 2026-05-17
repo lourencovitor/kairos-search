@@ -1,10 +1,10 @@
 {
-  "runId": "2026-05-15T21-54-14-617Z",
-  "generatedAt": "2026-05-15T21:54:14.617Z",
-  "totalRawJobs": 5606,
-  "rankedJobs": 741,
-  "selectedJobs": 735,
-  "rejectedJobs": 4847,
+  "runId": "2026-05-17T11-40-01-832Z",
+  "generatedAt": "2026-05-17T11:40:01.832Z",
+  "totalRawJobs": 5597,
+  "rankedJobs": 738,
+  "selectedJobs": 734,
+  "rejectedJobs": 4839,
   "selectionSummary": {
     "limit": 999,
     "minScore": 0,
@@ -12,14 +12,14 @@
     "desiredInternationalJobs": 80,
     "usedThresholdFallback": false,
     "selectedPrimaryJobs": 711,
-    "selectedSecondaryJobs": 30,
-    "selectedWorldwideCompatiblePrimaryJobs": 85,
+    "selectedSecondaryJobs": 27,
+    "selectedWorldwideCompatiblePrimaryJobs": 63,
     "filledFromSecondaryBecausePrimaryShortfall": 208,
     "marketCounts": {
-      "brazil": 255,
-      "brazil_friendly": 364,
-      "latam": 7,
-      "international": 115,
+      "brazil": 263,
+      "brazil_friendly": 377,
+      "latam": 8,
+      "international": 90,
       "unclear": 0
     }
   },
@@ -44,14 +44,14 @@
       "focus": "brazil",
       "tier": "brazil_public_api",
       "fetchedJobs": 0,
-      "error": "Request failed with status 429 for https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=senior+developer&location=Brazil&start=0"
+      "error": "Request failed with status 429 for https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=senior+software+engineer&location=Brazil&start=25"
     },
     {
       "source": "himalayas",
       "label": "Himalayas Brazil search",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 996
+      "fetchedJobs": 991
     },
     {
       "source": "getonboard",
@@ -111,6 +111,13 @@
     },
     {
       "source": "ashby",
+      "label": "Ashby – Cursor",
+      "focus": "global",
+      "tier": "direct_company_board",
+      "fetchedJobs": 17
+    },
+    {
+      "source": "ashby",
       "label": "Ashby – Infisical",
       "focus": "global",
       "tier": "direct_company_board",
@@ -132,10 +139,10 @@
     },
     {
       "source": "ashby",
-      "label": "Ashby – Supabase",
+      "label": "Ashby – OpenAI",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 33
+      "fetchedJobs": 26
     },
     {
       "source": "ashby",
@@ -146,17 +153,10 @@
     },
     {
       "source": "ashby",
-      "label": "Ashby – Cursor",
+      "label": "Ashby – Supabase",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 15
-    },
-    {
-      "source": "ashby",
-      "label": "Ashby – OpenAI",
-      "focus": "global",
-      "tier": "direct_company_board",
-      "fetchedJobs": 25
+      "fetchedJobs": 33
     },
     {
       "source": "ashby",
@@ -167,13 +167,6 @@
     },
     {
       "source": "ashby",
-      "label": "Ashby – 1Password",
-      "focus": "global",
-      "tier": "direct_company_board",
-      "fetchedJobs": 59
-    },
-    {
-      "source": "ashby",
       "label": "Ashby – n8n",
       "focus": "global",
       "tier": "direct_company_board",
@@ -181,10 +174,17 @@
     },
     {
       "source": "ashby",
+      "label": "Ashby – 1Password",
+      "focus": "global",
+      "tier": "direct_company_board",
+      "fetchedJobs": 59
+    },
+    {
+      "source": "ashby",
       "label": "Ashby – Cohere",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 76
+      "fetchedJobs": 75
     },
     {
       "source": "greenhouse",
@@ -205,21 +205,21 @@
       "label": "Cloudflare",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 182
+      "fetchedJobs": 181
     },
     {
       "source": "greenhouse",
       "label": "Stripe",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 488
+      "fetchedJobs": 485
     },
     {
       "source": "greenhouse",
       "label": "Databricks",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 800
+      "fetchedJobs": 801
     },
     {
       "source": "greenhouse",
@@ -233,14 +233,14 @@
       "label": "Twilio",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 154
+      "fetchedJobs": 153
     },
     {
       "source": "greenhouse",
       "label": "Fivetran",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 131
+      "fetchedJobs": 132
     },
     {
       "source": "greenhouse",
@@ -324,7 +324,7 @@
       "label": "Remotive",
       "focus": "global",
       "tier": "global_aggregator",
-      "fetchedJobs": 17
+      "fetchedJobs": 18
     },
     {
       "source": "remoteok",
@@ -344,7 +344,7 @@
         "siteId": "linkedin",
         "pages": 1,
         "queries": 1,
-        "durationMs": 3364,
+        "durationMs": 2581,
         "droppedJobs": 0,
         "warnings": []
       }
@@ -354,12 +354,12 @@
       "label": "browser_mcp:programathor",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 60,
+      "fetchedJobs": 59,
       "metadata": {
         "siteId": "programathor",
         "pages": 100,
         "queries": 25,
-        "durationMs": 438249,
+        "durationMs": 411078,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -472,7 +472,7 @@
         "siteId": "glassdoor",
         "pages": 1,
         "queries": 1,
-        "durationMs": 13722,
+        "durationMs": 14534,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results"
@@ -487,11 +487,16 @@
       "fetchedJobs": 300,
       "metadata": {
         "siteId": "vagas_com",
-        "pages": 81,
-        "queries": 21,
-        "durationMs": 309808,
+        "pages": 85,
+        "queries": 22,
+        "durationMs": 336129,
         "droppedJobs": 0,
         "warnings": [
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
@@ -570,7 +575,7 @@
         "siteId": "catho",
         "pages": 100,
         "queries": 25,
-        "durationMs": 354602,
+        "durationMs": 353477,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -686,7 +691,7 @@
         "siteId": "infojobs_br",
         "pages": 35,
         "queries": 9,
-        "durationMs": 136131,
+        "durationMs": 141471,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -712,14 +717,15 @@
       "label": "browser_mcp:gupy_public",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 97,
+      "fetchedJobs": 94,
       "metadata": {
         "siteId": "gupy_public",
         "pages": 100,
         "queries": 25,
-        "durationMs": 391486,
+        "durationMs": 392543,
         "droppedJobs": 82,
         "warnings": [
+          "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
@@ -812,7 +818,7 @@
         "siteId": "trampos_co",
         "pages": 100,
         "queries": 25,
-        "durationMs": 387157,
+        "durationMs": 396959,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -927,7 +933,7 @@
         "siteId": "revelo",
         "pages": 100,
         "queries": 25,
-        "durationMs": 425385,
+        "durationMs": 387397,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -1039,14 +1045,36 @@
       "focus": "brazil",
       "tier": "brazil_public_api",
       "fetchedJobs": 10,
-      "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://www.geekhunter.com.br/vagas?locale=pt-BR&search=software+engineer&page=2\", waiting until \"domcontentloaded\"\u001b[22m\n",
+      "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://www.geekhunter.com.br/vagas?locale=pt-BR&search=qa+engineer&page=4\", waiting until \"domcontentloaded\"\u001b[22m\n",
       "metadata": {
         "siteId": "geekhunter",
-        "pages": 5,
-        "queries": 2,
-        "durationMs": 71267,
+        "pages": 27,
+        "queries": 7,
+        "durationMs": 264403,
         "droppedJobs": 0,
         "warnings": [
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
+          "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
