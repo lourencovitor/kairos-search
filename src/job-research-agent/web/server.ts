@@ -36,6 +36,8 @@ const latestDir = path.join(config.outputRootDir, 'latest');
 
 const state: RunState = { runningPromise: null, lastRunError: null };
 
+const uploadKey = process.env.KAIROS_UPLOAD_KEY;
+
 const allowedOrigins = (process.env.KAIROS_ALLOWED_ORIGINS ?? '')
   .split(',')
   .map((s) => s.trim())
@@ -53,7 +55,7 @@ if (isProd) {
       const url = new URL(req.url ?? '/', 'http://localhost');
       if (url.pathname.startsWith('/api')) {
         await runMiddlewares(apiMiddlewares, req, res, () =>
-          handleApiRequest(url, req, res, config, latestDir, state),
+          handleApiRequest(url, req, res, config, latestDir, state, uploadKey),
         );
         return;
       }

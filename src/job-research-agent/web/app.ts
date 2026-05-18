@@ -8,6 +8,7 @@ import { latestRoute } from './routes/latest.route.js';
 import type { RunState } from './routes/run.route.js';
 import { runRoute } from './routes/run.route.js';
 import { statusRoute } from './routes/status.route.js';
+import { uploadLatestRoute } from './routes/upload-latest.route.js';
 import { sendJson } from './shared/send-json.js';
 
 export type { RunState };
@@ -36,7 +37,12 @@ export async function handleApiRequest(
   config: JobResearchConfig,
   latestDir: string,
   state: RunState,
+  uploadKey?: string,
 ): Promise<void> {
+  if (requestUrl.pathname.startsWith('/api/upload-latest/') && request.method === 'POST') {
+    await uploadLatestRoute(request, response, requestUrl.pathname, latestDir, uploadKey);
+    return;
+  }
   if (requestUrl.pathname === '/api/status') {
     await statusRoute(response, state.runningPromise !== null, state.lastRunError);
     return;
