@@ -24,7 +24,7 @@ const isProd = process.env.NODE_ENV === 'production';
 const port = Number(process.env.PORT ?? 3355);
 const apiPort = Number(process.env.API_PORT ?? 3356);
 const listenAll = process.env.KAIROS_LISTEN_ALL === 'true';
-const bindHost = listenAll ? '0.0.0.0' : '127.0.0.1';
+const bindHost = listenAll || isProd ? '0.0.0.0' : '127.0.0.1';
 
 const browserMcpDisabled = isProd || process.env.DISABLE_BROWSER === 'true';
 const config = createJobResearchConfig(
