@@ -1,17 +1,8 @@
-import type { JobResearchConfig } from "../../config/job-research.config.js";
-import type {
-  JobSourceSummary,
-  RawJobPosting,
-} from "../../domain/job.types.js";
-import type {
-  JobSource,
-  JobSourceFetchResult,
-} from "../job-source.interface.js";
-import { BrowserMcpClient } from "./browser-mcp.client.js";
-import {
-  BrowserMcpTraceWriter,
-  type BrowserMcpTrace,
-} from "./browser-mcp-trace.writer.js";
+import type { JobResearchConfig } from '../../config/job-research.config.js';
+import type { JobSourceSummary, RawJobPosting } from '../../domain/job.types.js';
+import type { JobSource, JobSourceFetchResult } from '../job-source.interface.js';
+import { type BrowserMcpTrace, type BrowserMcpTraceWriter } from './browser-mcp-trace.writer.js';
+import { BrowserMcpClient } from './browser-mcp.client.js';
 import {
   BROWSER_MCP_SITE_IDS,
   type BrowserMcpConfig,
@@ -21,7 +12,7 @@ import {
   type SiteAdapterContext,
   type SiteAdapterResult,
   type SiteAdapterTraceEntry,
-} from "./browser-mcp.types.js";
+} from './browser-mcp.types.js';
 
 /**
  * Opções de construção da engine. Todas as dependências externas
@@ -70,15 +61,12 @@ function syntheticTraceEntry(
   };
 }
 
-function syntheticSummary(
-  siteId: BrowserMcpSiteId,
-  errorMsg: string,
-): JobSourceSummary {
+function syntheticSummary(siteId: BrowserMcpSiteId, errorMsg: string): JobSourceSummary {
   return {
-    source: "browser_mcp",
+    source: 'browser_mcp',
     label: `browser_mcp:${siteId}`,
-    focus: "mixed",
-    tier: "global_aggregator",
+    focus: 'mixed',
+    tier: 'global_aggregator',
     fetchedJobs: 0,
     error: errorMsg,
   };
@@ -94,14 +82,12 @@ function enabledSiteIds(config: BrowserMcpConfig): BrowserMcpSiteId[] {
 }
 
 export class BrowserMcpEngine implements JobSource {
-  readonly name = "browser_mcp" as const;
+  readonly name = 'browser_mcp' as const;
 
   private readonly transportFactory: () => BrowserMcpTransport;
   private readonly traceWriter: BrowserMcpTraceWriter;
   private readonly adaptersFactory: (config: BrowserMcpConfig) => SiteAdapter[];
-  private readonly runDirectoryResolver?: (
-    config: JobResearchConfig,
-  ) => string | null;
+  private readonly runDirectoryResolver?: (config: JobResearchConfig) => string | null;
   private readonly now: () => number;
 
   constructor(options: BrowserMcpEngineOptions) {
@@ -136,10 +122,10 @@ export class BrowserMcpEngine implements JobSource {
     let abortedBySigint = false;
     const handleSigint = (): void => {
       abortedBySigint = true;
-      console.log("[browser-mcp] SIGINT detected, aborting adapters");
+      console.log('[browser-mcp] SIGINT detected, aborting adapters');
       abortController.abort();
     };
-    process.once("SIGINT", handleSigint);
+    process.once('SIGINT', handleSigint);
 
     const jobs: RawJobPosting[] = [];
     const summaries: JobSourceSummary[] = [];
@@ -148,7 +134,7 @@ export class BrowserMcpEngine implements JobSource {
     try {
       try {
         await client.connect();
-        console.log("[browser-mcp] connected");
+        console.log('[browser-mcp] connected');
       } catch (error) {
         const message = `browser_mcp connect failed: ${errorMessage(error)}`;
         console.log(`[browser-mcp] ${message}`);
@@ -186,7 +172,7 @@ export class BrowserMcpEngine implements JobSource {
       await this.persistTrace(config, runId, browserMcp, traceEntries);
       return { jobs, summaries };
     } finally {
-      process.removeListener("SIGINT", handleSigint);
+      process.removeListener('SIGINT', handleSigint);
       await client.disconnect();
     }
   }
@@ -197,13 +183,13 @@ export class BrowserMcpEngine implements JobSource {
    * do runId do pipeline — aceitável para V1 (task 3.9 faz a amarração).
    */
   private buildRunId(): string {
-    return new Date().toISOString().replaceAll(/[:.]/g, "-");
+    return new Date().toISOString().replaceAll(/[:.]/g, '-');
   }
 
   private async runParallel(
     adapters: SiteAdapter[],
     browserMcp: BrowserMcpConfig,
-    ctxBase: Omit<SiteAdapterContext, "siteConfig">,
+    ctxBase: Omit<SiteAdapterContext, 'siteConfig'>,
     output: {
       jobs: RawJobPosting[];
       summaries: JobSourceSummary[];
@@ -259,7 +245,7 @@ export class BrowserMcpEngine implements JobSource {
 
     const settled = await Promise.allSettled(tasks);
     for (const outcome of settled) {
-      if (outcome.status === "rejected") {
+      if (outcome.status === 'rejected') {
         // Não deveria acontecer — o try/catch acima normaliza as rejections.
         // Defensivo: emite um summary mínimo para não perder observabilidade.
         const message = errorMessage(outcome.reason);
@@ -267,16 +253,10 @@ export class BrowserMcpEngine implements JobSource {
         continue;
       }
       const value = outcome.value;
-      if ("error" in value) {
-        output.summaries.push(
-          syntheticSummary(value.adapter.id, errorMessage(value.error)),
-        );
+      if ('error' in value) {
+        output.summaries.push(syntheticSummary(value.adapter.id, errorMessage(value.error)));
         output.traceEntries.push(
-          syntheticTraceEntry(
-            value.adapter.id,
-            errorMessage(value.error),
-            value.durationMs,
-          ),
+          syntheticTraceEntry(value.adapter.id, errorMessage(value.error), value.durationMs),
         );
         continue;
       }
@@ -287,7 +267,7 @@ export class BrowserMcpEngine implements JobSource {
   private async runSerial(
     adapters: SiteAdapter[],
     browserMcp: BrowserMcpConfig,
-    ctxBase: Omit<SiteAdapterContext, "siteConfig">,
+    ctxBase: Omit<SiteAdapterContext, 'siteConfig'>,
     output: {
       jobs: RawJobPosting[];
       summaries: JobSourceSummary[];
@@ -297,10 +277,8 @@ export class BrowserMcpEngine implements JobSource {
   ): Promise<void> {
     for (const adapter of adapters) {
       if (output.isAbortedBySigint()) {
-        output.summaries.push(syntheticSummary(adapter.id, "aborted_sigint"));
-        output.traceEntries.push(
-          syntheticTraceEntry(adapter.id, "aborted_sigint"),
-        );
+        output.summaries.push(syntheticSummary(adapter.id, 'aborted_sigint'));
+        output.traceEntries.push(syntheticTraceEntry(adapter.id, 'aborted_sigint'));
         continue;
       }
 
@@ -328,9 +306,7 @@ export class BrowserMcpEngine implements JobSource {
           )} error=${message}`,
         );
         output.summaries.push(syntheticSummary(adapter.id, message));
-        output.traceEntries.push(
-          syntheticTraceEntry(adapter.id, message, durationMs),
-        );
+        output.traceEntries.push(syntheticTraceEntry(adapter.id, message, durationMs));
       }
     }
   }
@@ -358,9 +334,11 @@ export class BrowserMcpEngine implements JobSource {
       output.traceEntries.push(result.trace);
     } else {
       // Caso teoricamente impossível, mas mantemos a granularidade por site.
-      const fallbackSiteId = (result.summary.label.startsWith("browser_mcp:")
-        ? result.summary.label.slice("browser_mcp:".length)
-        : "") as BrowserMcpSiteId;
+      const fallbackSiteId = (
+        result.summary.label.startsWith('browser_mcp:')
+          ? result.summary.label.slice('browser_mcp:'.length)
+          : ''
+      ) as BrowserMcpSiteId;
       output.traceEntries.push({
         siteId: fallbackSiteId,
         queriesExecuted: 0,
@@ -369,7 +347,7 @@ export class BrowserMcpEngine implements JobSource {
         droppedJobs: 0,
         durationMs,
         errors: [],
-        warnings: ["missing_trace_from_adapter"],
+        warnings: ['missing_trace_from_adapter'],
       });
     }
   }
@@ -402,9 +380,7 @@ export class BrowserMcpEngine implements JobSource {
     try {
       await this.traceWriter.write(runDirectory, trace);
     } catch (error) {
-      console.warn(
-        `[browser-mcp] failed to persist trace: ${errorMessage(error)}`,
-      );
+      console.warn(`[browser-mcp] failed to persist trace: ${errorMessage(error)}`);
     }
   }
 }

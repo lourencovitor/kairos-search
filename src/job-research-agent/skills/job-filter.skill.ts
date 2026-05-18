@@ -1,7 +1,7 @@
 import type { JobResearchConfig } from '../config/job-research.config.js';
 import type { JobOpportunity } from '../domain/job.types.js';
-import { freshestAgeInDays, normalizeForComparison } from '../shared/job.util.js';
 import { toSeniorityReportGroupV2 } from '../shared/job-taxonomy.util.js';
+import { freshestAgeInDays, normalizeForComparison } from '../shared/job.util.js';
 import { isPrimaryBrazilMarket } from './job-market-classifier.skill.js';
 import {
   hasHardRestriction,
@@ -9,10 +9,7 @@ import {
   isWorldwideRemoteClearlyCompatibleWithBrazil,
 } from './job-selection-policy.skill.js';
 
-export function applyJobFilters(
-  job: JobOpportunity,
-  config: JobResearchConfig,
-): JobOpportunity {
+export function applyJobFilters(job: JobOpportunity, config: JobResearchConfig): JobOpportunity {
   const rejectionReasons: string[] = [];
   const normalizedTitle = normalizeForComparison(job.title);
 
@@ -57,19 +54,11 @@ export function applyJobFilters(
     rejectionReasons.push('Job does not meet the minimum stack match threshold');
   }
 
-  if (
-    job.remotePolicy === 'onsite' &&
-    !config.includeOnsite &&
-    job.jobMarket !== 'brazil'
-  ) {
+  if (job.remotePolicy === 'onsite' && !config.includeOnsite && job.jobMarket !== 'brazil') {
     rejectionReasons.push('Onsite roles are only considered when they are Brazil-based');
   }
 
-  if (
-    job.remotePolicy === 'hybrid' &&
-    !config.includeHybrid &&
-    job.jobMarket !== 'brazil'
-  ) {
+  if (job.remotePolicy === 'hybrid' && !config.includeHybrid && job.jobMarket !== 'brazil') {
     rejectionReasons.push('Hybrid roles are only considered when they are Brazil-based');
   }
 
@@ -77,11 +66,6 @@ export function applyJobFilters(
   job.isRelevant = rejectionReasons.length === 0;
 
   return job;
-}
-
-function isJuniorOrPleno(job: JobOpportunity): boolean {
-  const reportGroup = toSeniorityReportGroupV2(job);
-  return reportGroup === 'junior' || reportGroup === 'pleno';
 }
 
 function getMaxJobAgeDays(job: JobOpportunity, config: JobResearchConfig): number {

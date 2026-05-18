@@ -1,0 +1,269 @@
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import { Box, Card, CardContent, Link, Stack, Tooltip, Typography } from '@mui/material';
+
+import type { JobOpportunity } from '../api/types.js';
+import { scoreColors, scoreRangeLabel } from '../utils/color-theme.js';
+import {
+  formatSalary,
+  marketLabel,
+  relativeDate,
+  remotePolicyLabel,
+} from '../utils/format-helpers.js';
+import { GROUP_COLORS, GROUP_DARK, GROUP_LABELS, reportGroup } from '../utils/report-group.js';
+import { CompanyAvatar } from './CompanyAvatar.js';
+import { GroupTag } from './GroupTag.js';
+import { JobAttributeBadge } from './JobAttributeBadge.js';
+import { ScoreBadge } from './ScoreBadge.js';
+
+interface JobCardProps {
+  job: JobOpportunity;
+  isDark: boolean;
+}
+
+export function JobCard({ job, isDark }: JobCardProps) {
+  const grp = reportGroup(job);
+  const c = GROUP_COLORS[grp];
+  const src = job.sourceBoard ?? job.source;
+
+  const tagBg = isDark ? '#1E293B' : '#F1F5F9';
+  const tagBorder = isDark ? '#334155' : '#E2E8F0';
+  const tagText = isDark ? '#94A3B8' : '#475569';
+
+  const salaryBg = isDark ? 'rgba(5,150,105,0.18)' : '#D1FAE5';
+  const salaryBorder = isDark ? 'rgba(5,150,105,0.4)' : '#A7F3D0';
+  const salaryText = isDark ? '#34D399' : '#065F46';
+
+  const metaParts = [
+    job.locationText,
+    remotePolicyLabel(job.remotePolicy),
+    marketLabel(job.jobMarket),
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  const rightMeta = [src, job.publishedAt ? relativeDate(job.publishedAt) : undefined]
+    .filter(Boolean)
+    .join(' · ');
+
+  return (
+    <Card
+      sx={{
+        borderLeft: `4px solid ${c.accent}`,
+        transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+        '&:hover': {
+          bgcolor: isDark ? `${c.accent}0D` : `${c.accent}07`,
+          boxShadow: `0 14px 40px rgba(15,31,46,${isDark ? '0.4' : '0.13'}), 0 3px 10px rgba(15,31,46,${isDark ? '0.3' : '0.07'})`,
+          transform: 'translateY(-2px)',
+        },
+      }}
+    >
+      <CardContent sx={{ p: { xs: 2, sm: 3 }, '&:last-child': { pb: { xs: 2, sm: 3 } } }}>
+        <Stack direction="row" spacing={{ xs: 1.5, sm: 2 }} sx={{ alignItems: 'flex-start' }}>
+          <Stack sx={{ alignItems: 'center', gap: 0.6, flexShrink: 0, width: 44 }}>
+            <CompanyAvatar name={job.companyName} highlight={job.score >= 80} />
+            <JobAttributeBadge
+              remotePolicy={job.remotePolicy}
+              jobMarket={job.jobMarket}
+              isDark={isDark}
+            />
+          </Stack>
+
+          <Box sx={{ flex: 1, minWidth: 0 }}>
+            <Link
+              href={job.url}
+              target="_blank"
+              rel="noreferrer"
+              underline="none"
+              sx={{ display: 'block', mb: 0.4 }}
+            >
+              <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5 }}>
+                <Typography
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: { xs: '0.93rem', sm: '1rem' },
+                    lineHeight: 1.3,
+                    letterSpacing: '-0.015em',
+                    color: 'text.primary',
+                    transition: 'color 0.15s',
+                    '&:hover': { color: 'primary.main' },
+                  }}
+                >
+                  {job.title}
+                </Typography>
+                <OpenInNewIcon
+                  sx={{
+                    fontSize: 11,
+                    color: 'text.secondary',
+                    flexShrink: 0,
+                    opacity: 0.5,
+                    display: { xs: 'none', sm: 'block' },
+                  }}
+                />
+              </Stack>
+            </Link>
+
+            <Typography sx={{ fontSize: { xs: '0.78rem', sm: '0.84rem' }, mb: 1, lineHeight: 1.4 }}>
+              <Box component="span" sx={{ fontWeight: 600, color: 'secondary.main' }}>
+                {job.companyName}
+              </Box>
+              {metaParts && (
+                <Box component="span" sx={{ color: 'text.secondary' }}>
+                  {' · '}
+                  {metaParts}
+                </Box>
+              )}
+            </Typography>
+
+            <Stack direction="row" sx={{ gap: 0.5, flexWrap: 'wrap', alignItems: 'center' }}>
+              <GroupTag
+                bg={isDark ? GROUP_DARK[grp].bg : c.bg}
+                color={isDark ? GROUP_DARK[grp].text : c.text}
+              >
+                {GROUP_LABELS[grp]}
+              </GroupTag>
+              {(job.stackSignals ?? []).slice(0, 6).map((s) => (
+                <Box
+                  key={s}
+                  sx={{
+                    px: '7px',
+                    py: '2px',
+                    borderRadius: '4px',
+                    bgcolor: tagBg,
+                    border: `1px solid ${tagBorder}`,
+                    fontSize: '0.63rem',
+                    fontWeight: 500,
+                    color: tagText,
+                    lineHeight: '17px',
+                    fontFamily: '"SF Mono","Cascadia Code","Fira Code",monospace',
+                  }}
+                >
+                  {s}
+                </Box>
+              ))}
+            </Stack>
+
+            {(job.salaryText || rightMeta) && (
+              <Stack
+                direction="row"
+                spacing={1}
+                sx={{
+                  mt: 0.9,
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  display: { xs: 'flex', sm: 'none' },
+                }}
+              >
+                {job.salaryText && (
+                  <Box
+                    sx={{
+                      px: '7px',
+                      py: '2px',
+                      borderRadius: '4px',
+                      bgcolor: salaryBg,
+                      border: `1px solid ${salaryBorder}`,
+                    }}
+                  >
+                    <Typography
+                      sx={{
+                        fontSize: '0.62rem',
+                        fontWeight: 700,
+                        color: salaryText,
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {formatSalary(job.salaryText)}
+                    </Typography>
+                  </Box>
+                )}
+                <Typography sx={{ fontSize: '0.61rem', color: 'text.secondary', opacity: 0.7 }}>
+                  {rightMeta}
+                </Typography>
+              </Stack>
+            )}
+          </Box>
+
+          <Stack sx={{ alignItems: 'flex-end', gap: 0.75, flexShrink: 0 }}>
+            <Tooltip
+              arrow
+              placement="left"
+              title={
+                <Box sx={{ p: 0.25 }}>
+                  <Typography
+                    sx={{ fontWeight: 700, fontSize: '0.76rem', display: 'block', mb: 0.5 }}
+                  >
+                    Score de aderência · {job.score}/100
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '0.71rem',
+                      color: scoreColors(job.score).stroke,
+                      fontWeight: 600,
+                      display: 'block',
+                      mb: 0.5,
+                    }}
+                  >
+                    ● {scoreRangeLabel(job.score)}
+                  </Typography>
+                  <Typography
+                    sx={{
+                      fontSize: '0.67rem',
+                      color: 'rgba(255,255,255,0.65)',
+                      lineHeight: 1.6,
+                      display: 'block',
+                    }}
+                  >
+                    Calculado com base em stack técnica, nível de senioridade, mercado e política de
+                    trabalho.
+                  </Typography>
+                </Box>
+              }
+            >
+              <Box sx={{ cursor: 'help' }}>
+                <ScoreBadge score={job.score} />
+              </Box>
+            </Tooltip>
+            {job.salaryText && (
+              <Box
+                sx={{
+                  display: { xs: 'none', sm: 'block' },
+                  px: '9px',
+                  py: '3px',
+                  borderRadius: '5px',
+                  bgcolor: salaryBg,
+                  border: `1px solid ${salaryBorder}`,
+                  maxWidth: 130,
+                }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: '0.67rem',
+                    fontWeight: 700,
+                    color: salaryText,
+                    lineHeight: 1.4,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {formatSalary(job.salaryText)}
+                </Typography>
+              </Box>
+            )}
+            <Typography
+              variant="caption"
+              sx={{
+                display: { xs: 'none', sm: 'block' },
+                color: 'text.secondary',
+                fontSize: '0.63rem',
+                whiteSpace: 'nowrap',
+                opacity: 0.75,
+              }}
+            >
+              {rightMeta}
+            </Typography>
+          </Stack>
+        </Stack>
+      </CardContent>
+    </Card>
+  );
+}

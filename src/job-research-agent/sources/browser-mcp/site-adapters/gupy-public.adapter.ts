@@ -1,26 +1,26 @@
-import type { JobSourceSummary, RawJobPosting } from "../../../domain/job.types.js";
-import { normalizeWhitespace } from "../../../shared/job.util.js";
+import type { JobSourceSummary, RawJobPosting } from '../../../domain/job.types.js';
+import { normalizeWhitespace } from '../../../shared/job.util.js';
 import {
-  GlobalPageBudgetExhaustedError,
   type BrowserMcpSiteConfig,
   type BrowserMcpSnapshot,
+  GlobalPageBudgetExhaustedError,
   type SiteAdapter,
   type SiteAdapterContext,
   type SiteAdapterResult,
   type SiteAdapterTraceEntry,
-} from "../browser-mcp.types.js";
+} from '../browser-mcp.types.js';
 
 // ---------------------------------------------------------------------------
 // Seletores e constantes top-level (Requirement 3.6 — seletores declarados).
 // ---------------------------------------------------------------------------
 
-export const CARD_SELECTOR = "div.job-card";
-export const TITLE_SELECTOR = "h3.job-card__title";
-export const COMPANY_SELECTOR = "p.job-card__company";
-export const LOCATION_SELECTOR = "p.job-card__location";
-export const JOB_URL_REGEX = /\.gupy\.io\/job\/([A-Za-z0-9+/=]+)/i;
+export const CARD_SELECTOR = 'div.job-card';
+export const TITLE_SELECTOR = 'h3.job-card__title';
+export const COMPANY_SELECTOR = 'p.job-card__company';
+export const LOCATION_SELECTOR = 'p.job-card__location';
+export const JOB_URL_REGEX = /\.gupy\.io\/job\/([A-Za-z0-9+/=\-]+)/i;
 export const LOGIN_WALL_SELECTOR = 'form.login-form, form[action="/login"]';
-export const CAPTCHA_SELECTOR = ".captcha-container, iframe[src*=\"recaptcha\"]";
+export const CAPTCHA_SELECTOR = '.captcha-container, iframe[src*="recaptcha"]';
 
 /**
  * Lista negra de seletores de botão "Apply". O adapter não clica em nenhum
@@ -35,18 +35,15 @@ export const APPLY_BUTTON_SELECTORS: readonly string[] = [
   'a:has-text("Candidate-se")',
 ];
 
-const CAPTCHA_DETECTOR_REGEX =
-  /captcha-container|captcha-overlay/i;
+const CAPTCHA_DETECTOR_REGEX = /captcha-container|captcha-overlay/i;
 
-const LOGIN_WALL_DETECTOR_REGEX =
-  /form[^>]*action="\/login"|form[^>]*class="[^"]*login-form/i;
+const LOGIN_WALL_DETECTOR_REGEX = /form[^>]*action="\/login"|form[^>]*class="[^"]*login-form/i;
 
-const MARKET_HINT_REGEX =
-  /\b(Remote|Remoto|Brasil|São Paulo|Rio de Janeiro)\b/i;
+const MARKET_HINT_REGEX = /\b(Remote|Remoto|Brasil|São Paulo|Rio de Janeiro)\b/i;
 
 const DEFAULT_SITE_CONFIG: BrowserMcpSiteConfig = {
   enabled: false,
-  searchQueries: ["desenvolvedor", "engenheiro de software"],
+  searchQueries: ['desenvolvedor', 'engenheiro de software'],
   maxPagesPerQuery: 3,
   rateLimitMs: 4_000,
   maxJobs: 200,
@@ -58,8 +55,7 @@ const DEFAULT_SITE_CONFIG: BrowserMcpSiteConfig = {
 
 function splitIntoCards(domHtml: string): string[] {
   // Real structure: <a href="https://COMPANY.gupy.io/job/..." aria-label="Ir para vaga TITLE da empresa COMPANY na cidade CITY...">
-  const cardRegex =
-    /<a\b[^>]*href="https:\/\/[^"]*\.gupy\.io\/job\/[^"]*"[^>]*>/gi;
+  const cardRegex = /<a\b[^>]*href="https:\/\/[^"]*\.gupy\.io\/job\/[^"]*"[^>]*>/gi;
   const out: string[] = [];
   let match: RegExpExecArray | null;
   while ((match = cardRegex.exec(domHtml)) !== null) {
@@ -68,13 +64,13 @@ function splitIntoCards(domHtml: string): string[] {
   return out;
 }
 
-function extractTextByTag(cardHtml: string, tagPattern: RegExp): string | undefined {
+function _extractTextByTag(cardHtml: string, tagPattern: RegExp): string | undefined {
   const match = tagPattern.exec(cardHtml);
   if (!match) {
     return undefined;
   }
-  const fragment = match[1] ?? "";
-  const stripped = fragment.replaceAll(/<[^>]+>/g, " ");
+  const fragment = match[1] ?? '';
+  const stripped = fragment.replaceAll(/<[^>]+>/g, ' ');
   const normalized = normalizeWhitespace(stripped);
   return normalized.length > 0 ? normalized : undefined;
 }
@@ -112,7 +108,7 @@ function extractJobUuid(cardHtml: string): string | undefined {
 }
 
 function buildCanonicalUrl(href: string): string {
-  if (href.startsWith("http")) {
+  if (href.startsWith('http')) {
     return href;
   }
   return `https://portal.gupy.io${href}`;
@@ -135,8 +131,8 @@ function detectCaptcha(domHtml: string): boolean {
   return CAPTCHA_DETECTOR_REGEX.test(domHtml);
 }
 
-function deriveMarketHint(locationText: string): "brazil" | undefined {
-  return MARKET_HINT_REGEX.test(locationText) ? "brazil" : undefined;
+function deriveMarketHint(locationText: string): 'brazil' | undefined {
+  return MARKET_HINT_REGEX.test(locationText) ? 'brazil' : undefined;
 }
 
 // ---------------------------------------------------------------------------
@@ -144,7 +140,7 @@ function deriveMarketHint(locationText: string): "brazil" | undefined {
 // ---------------------------------------------------------------------------
 
 export class GupyPublicAdapter implements SiteAdapter {
-  readonly id = "gupy_public" as const;
+  readonly id = 'gupy_public' as const;
   readonly defaultConfig: BrowserMcpSiteConfig = DEFAULT_SITE_CONFIG;
 
   async collect(ctx: SiteAdapterContext): Promise<SiteAdapterResult> {
@@ -176,13 +172,13 @@ export class GupyPublicAdapter implements SiteAdapter {
 
         let snapshot: BrowserMcpSnapshot;
         try {
-          await client.navigate("gupy_public", url, siteConfig.rateLimitMs);
+          await client.navigate('gupy_public', url, siteConfig.rateLimitMs);
           pagesVisited += 1;
           snapshot = await client.snapshot();
         } catch (error) {
           if (error instanceof GlobalPageBudgetExhaustedError) {
-            summaryError = "skipped_global_limit";
-            errors.push("skipped_global_limit");
+            summaryError = 'skipped_global_limit';
+            errors.push('skipped_global_limit');
             break outer;
           }
           const message = error instanceof Error ? error.message : String(error);
@@ -194,20 +190,20 @@ export class GupyPublicAdapter implements SiteAdapter {
         const { domHtml } = snapshot;
 
         if (detectLoginWall(domHtml)) {
-          summaryError = "requires_manual_login";
-          errors.push("requires_manual_login");
+          summaryError = 'requires_manual_login';
+          errors.push('requires_manual_login');
           break outer;
         }
 
         if (detectCaptcha(domHtml)) {
-          summaryError = "rate_limited_or_captcha";
-          errors.push("rate_limited_or_captcha");
+          summaryError = 'rate_limited_or_captcha';
+          errors.push('rate_limited_or_captcha');
           break outer;
         }
 
         const cards = splitIntoCards(domHtml);
         if (cards.length === 0) {
-          warnings.push("extraction_zero_results");
+          warnings.push('extraction_zero_results');
           continue;
         }
 
@@ -216,7 +212,7 @@ export class GupyPublicAdapter implements SiteAdapter {
         for (const cardHtml of cards) {
           const title = normalizeWhitespace(extractTitle(cardHtml));
           const company = normalizeWhitespace(extractCompany(cardHtml));
-          const location = normalizeWhitespace(extractLocation(cardHtml) ?? "");
+          const location = normalizeWhitespace(extractLocation(cardHtml) ?? '');
           const jobUuid = extractJobUuid(cardHtml);
           const href = extractJobUrl(cardHtml);
 
@@ -234,18 +230,18 @@ export class GupyPublicAdapter implements SiteAdapter {
           const marketHint = deriveMarketHint(location);
 
           const job: RawJobPosting = {
-            source: "browser_mcp",
+            source: 'browser_mcp',
             sourceId,
-            sourceBoard: "gupy-public-browser-mcp",
-            sourceType: "aggregator",
-            sourceFocus: "brazil",
-            sourceTier: "brazil_public_api",
+            sourceBoard: 'gupy-public-browser-mcp',
+            sourceType: 'aggregator',
+            sourceFocus: 'brazil',
+            sourceTier: 'brazil_public_api',
             sourceQualityRank: 11,
             companyName: company,
             title,
             url: buildCanonicalUrl(href),
             locationText: location,
-            descriptionText: "",
+            descriptionText: '',
             tags: [],
             regionHints: [],
             restrictionHints: [],
@@ -253,7 +249,7 @@ export class GupyPublicAdapter implements SiteAdapter {
             ...(marketHint ? { marketHint } : {}),
             metadata: {
               browserMcp: {
-                siteId: "gupy_public",
+                siteId: 'gupy_public',
                 query,
               },
             },
@@ -270,7 +266,7 @@ export class GupyPublicAdapter implements SiteAdapter {
 
         // Requirement 17.2 — layout-change detection
         if (cards.length > 0 && extractedOnThisPage === 0) {
-          warnings.push("extraction_zero_results");
+          warnings.push('extraction_zero_results');
         }
       }
     }
@@ -278,7 +274,7 @@ export class GupyPublicAdapter implements SiteAdapter {
     const durationMs = ctx.now().getTime() - startedAt;
 
     const trace: SiteAdapterTraceEntry = {
-      siteId: "gupy_public",
+      siteId: 'gupy_public',
       queriesExecuted,
       pagesVisited,
       jobsExtracted: jobs.length,
@@ -290,7 +286,7 @@ export class GupyPublicAdapter implements SiteAdapter {
 
     const summary: JobSourceSummary & {
       metadata?: {
-        siteId: "gupy_public";
+        siteId: 'gupy_public';
         pages: number;
         queries: number;
         durationMs: number;
@@ -298,14 +294,14 @@ export class GupyPublicAdapter implements SiteAdapter {
         warnings: string[];
       };
     } = {
-      source: "browser_mcp",
-      label: "browser_mcp:gupy_public",
-      focus: "brazil",
-      tier: "brazil_public_api",
+      source: 'browser_mcp',
+      label: 'browser_mcp:gupy_public',
+      focus: 'brazil',
+      tier: 'brazil_public_api',
       fetchedJobs: jobs.length,
       ...(summaryError ? { error: summaryError } : {}),
       metadata: {
-        siteId: "gupy_public",
+        siteId: 'gupy_public',
         pages: pagesVisited,
         queries: queriesExecuted,
         durationMs,

@@ -1,24 +1,21 @@
+import { describe, expect, it } from 'vitest';
+
 import path from 'node:path';
 
-import { describe, expect, it, vi } from 'vitest';
-
-import {
-  createJobResearchConfig,
-  type JobResearchConfig,
-} from '../config/job-research.config.js';
-import type {
-  JobMarket,
-  JobResearchRunResult,
-  JobSourceSummary,
-} from '../domain/job.types.js';
+import { type JobResearchConfig, createJobResearchConfig } from '../config/job-research.config.js';
+import type { JobMarket, JobResearchRunResult, JobSourceSummary } from '../domain/job.types.js';
 import { formatCliOutput, parseArgs } from './run-job-research.js';
 
 // Fixture mínima de JobResearchRunResult. Só populamos os campos que o
 // formatCliOutput lê; os demais são placeholders válidos para satisfazer o tipo.
-function buildRunResult(overrides: {
-  csvReportBySeniorityPaths?: Partial<JobResearchRunResult['output']['csvReportBySeniorityPaths']>;
-  sourceSummaries?: JobSourceSummary[];
-} = {}): JobResearchRunResult {
+function buildRunResult(
+  overrides: {
+    csvReportBySeniorityPaths?: Partial<
+      JobResearchRunResult['output']['csvReportBySeniorityPaths']
+    >;
+    sourceSummaries?: JobSourceSummary[];
+  } = {},
+): JobResearchRunResult {
   const marketCounts: Record<JobMarket, number> = {
     brazil: 0,
     brazil_friendly: 0,
@@ -85,8 +82,8 @@ function buildConfig(
   });
 }
 
-describe('formatCliOutput — CSV report paths (V2, 7 keys)', () => {
-  it('renders all 7 CSV report lines in canonical order when every path is null', () => {
+describe('formatCliOutput — CSV report paths (V2, 8 keys)', () => {
+  it('renders all 8 CSV report lines in canonical order when every path is null', () => {
     const result = buildRunResult();
     const config = buildConfig();
 
@@ -94,10 +91,10 @@ describe('formatCliOutput — CSV report paths (V2, 7 keys)', () => {
     const lines = output.split('\n');
 
     const csvLines = lines.filter((line) => line.startsWith('CSV report '));
-    // O primeiro é o "CSV report: ..." (o geral); filtramos só os 7 por-grupo.
+    // O primeiro é o "CSV report: ..." (o geral); filtramos só os 8 por-grupo.
     const groupLines = csvLines.filter((line) => !line.startsWith('CSV report:'));
 
-    expect(groupLines).toHaveLength(7);
+    expect(groupLines).toHaveLength(8);
     expect(groupLines[0]).toMatch(/^CSV report junior: /);
     expect(groupLines[1]).toMatch(/^CSV report pleno:/);
     expect(groupLines[2]).toMatch(/^CSV report senior: /);
@@ -105,9 +102,10 @@ describe('formatCliOutput — CSV report paths (V2, 7 keys)', () => {
     expect(groupLines[4]).toMatch(/^CSV report arq:/);
     expect(groupLines[5]).toMatch(/^CSV report qa:/);
     expect(groupLines[6]).toMatch(/^CSV report devops: /);
+    expect(groupLines[7]).toMatch(/^CSV report mgmt:/);
 
     for (const line of groupLines) {
-      expect(line).toContain('skipped (< 20 jobs)');
+      expect(line).toContain('skipped (0 jobs)');
     }
   });
 
@@ -121,7 +119,7 @@ describe('formatCliOutput — CSV report paths (V2, 7 keys)', () => {
     const output = formatCliOutput(result, config);
 
     expect(output).toContain(`CSV report junior: data/tmp/report-junior.csv`);
-    expect(output).toContain('CSV report pleno:  skipped (< 20 jobs)');
+    expect(output).toContain('CSV report pleno:  skipped (0 jobs)');
   });
 });
 
@@ -202,12 +200,8 @@ describe('formatCliOutput — Browser MCP summary block', () => {
     const output = formatCliOutput(result, config);
 
     expect(output).toContain('Browser MCP summary (enabled):');
-    expect(output).toContain(
-      '  - linkedin: fetched=42, pages=3, queries=2, duration=1500ms',
-    );
-    expect(output).toContain(
-      '  - programathor: fetched=17, pages=5, queries=1, duration=900ms',
-    );
+    expect(output).toContain('  - linkedin: fetched=42, pages=3, queries=2, duration=1500ms');
+    expect(output).toContain('  - programathor: fetched=17, pages=5, queries=1, duration=900ms');
   });
 
   it('defaults missing metadata counters to 0', () => {
@@ -225,26 +219,28 @@ describe('formatCliOutput — Browser MCP summary block', () => {
 
     const output = formatCliOutput(result, config);
 
-    expect(output).toContain(
-      '  - glassdoor: fetched=0, pages=0, queries=0, duration=0ms',
-    );
+    expect(output).toContain('  - glassdoor: fetched=0, pages=0, queries=0, duration=0ms');
   });
 });
 
-
 describe('parseArgs — Browser MCP CLI flags', () => {
   it('--browser-mcp sets browserMcp.enabled=true', () => {
-    const overrides = parseArgs(['--browser-mcp']);
-    expect(overrides.browserMcp?.enabled).toBe(true);
+    const result = parseArgs(['--browser-mcp']);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.browserMcp?.enabled).toBe(true);
   });
 
   it('--no-browser-mcp sets browserMcp.enabled=false', () => {
-    const overrides = parseArgs(['--no-browser-mcp']);
-    expect(overrides.browserMcp?.enabled).toBe(false);
+    const result = parseArgs(['--no-browser-mcp']);
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.browserMcp?.enabled).toBe(false);
   });
 
   it('--browser-mcp-only enables browser mcp and disables all other sources', () => {
-    const overrides = parseArgs(['--browser-mcp-only']);
+    const result = parseArgs(['--browser-mcp-only']);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const overrides = result.value;
     expect(overrides.browserMcp?.enabled).toBe(true);
     expect((overrides.programathor as { enabled: boolean })?.enabled).toBe(false);
     expect((overrides.linkedIn as { enabled: boolean })?.enabled).toBe(false);
@@ -260,17 +256,15 @@ describe('parseArgs — Browser MCP CLI flags', () => {
   });
 
   it('--browser-mcp-site=linkedin --browser-mcp-site=programathor enables only those two', () => {
-    const overrides = parseArgs([
-      '--browser-mcp-site=linkedin',
-      '--browser-mcp-site=programathor',
-    ]);
-
+    const result = parseArgs(['--browser-mcp-site=linkedin', '--browser-mcp-site=programathor']);
+    expect(result.ok).toBe(true);
+    if (!result.ok) return;
+    const overrides = result.value;
     expect(overrides.browserMcp?.enabled).toBe(true);
 
     const sites = (overrides.browserMcp as { sites: Record<string, { enabled: boolean }> })?.sites;
     expect(sites.linkedin.enabled).toBe(true);
     expect(sites.programathor.enabled).toBe(true);
-    // All other sites should be disabled
     expect(sites.glassdoor.enabled).toBe(false);
     expect(sites.vagas_com.enabled).toBe(false);
     expect(sites.catho.enabled).toBe(false);
@@ -280,37 +274,27 @@ describe('parseArgs — Browser MCP CLI flags', () => {
     expect(sites.revelo.enabled).toBe(false);
   });
 
-  it('--browser-mcp-site with invalid id calls process.exit(1)', () => {
-    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit called');
-    });
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-
-    expect(() => parseArgs(['--browser-mcp-site=invalid_site'])).toThrow('process.exit called');
-    expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(
-      expect.stringContaining('unknown browser-mcp site: invalid_site'),
-    );
-
-    exitSpy.mockRestore();
-    errorSpy.mockRestore();
+  it('--browser-mcp-site with invalid id returns error result', () => {
+    const result = parseArgs(['--browser-mcp-site=invalid_site']);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.code).toBe(1);
+      expect(result.error).toContain('unknown browser-mcp site: invalid_site');
+    }
   });
 
-  it('conflicting --browser-mcp and --no-browser-mcp calls process.exit(1)', () => {
-    const exitSpy = vi.spyOn(process, 'exit').mockImplementation(() => {
-      throw new Error('process.exit called');
-    });
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  it('conflicting --browser-mcp and --no-browser-mcp returns error result', () => {
+    const result = parseArgs(['--browser-mcp', '--no-browser-mcp']);
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.code).toBe(1);
+      expect(result.error).toBe('conflicting flags: --browser-mcp and --no-browser-mcp');
+    }
+  });
 
-    expect(() => parseArgs(['--browser-mcp', '--no-browser-mcp'])).toThrow(
-      'process.exit called',
-    );
-    expect(exitSpy).toHaveBeenCalledWith(1);
-    expect(errorSpy).toHaveBeenCalledWith(
-      'conflicting flags: --browser-mcp and --no-browser-mcp',
-    );
-
-    exitSpy.mockRestore();
-    errorSpy.mockRestore();
+  it('--help returns ok: false with code 0', () => {
+    const result = parseArgs(['--help']);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.code).toBe(0);
   });
 });

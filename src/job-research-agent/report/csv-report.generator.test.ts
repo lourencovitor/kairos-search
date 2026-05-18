@@ -1,19 +1,15 @@
-import { describe, expect, it } from "vitest";
-import fc from "fast-check";
+import fc from 'fast-check';
+import { describe, expect, it } from 'vitest';
 
+import { jobOpportunityArb } from '../../../test-fixtures/browser-mcp/generators.js';
+import type { JobScoreBreakdown } from '../domain/job-score.types.js';
 import type {
   JobOpportunity,
   RawJobPosting,
   RoleCategory,
   SeniorityLevel,
-} from "../domain/job.types.js";
-import { SENIORITY_REPORT_GROUP_V2_ORDER } from "../domain/job.types.js";
-import type { JobScoreBreakdown } from "../domain/job-score.types.js";
-import { jobOpportunityArb } from "../../../test-fixtures/browser-mcp/generators.js";
-import {
-  CsvReportGenerator,
-  type CsvSeniorityJobGroupsV2,
-} from "./csv-report.generator.js";
+} from '../domain/job.types.js';
+import { CsvReportGenerator, type CsvSeniorityJobGroupsV2 } from './csv-report.generator.js';
 
 // ---------------------------------------------------------------------------
 // Fixture helpers
@@ -46,16 +42,16 @@ function buildScoreBreakdown(total: number): JobScoreBreakdown {
 
 function buildRawJob(overrides: Partial<RawJobPosting> = {}): RawJobPosting {
   return {
-    source: "linkedin",
-    sourceId: "raw-1",
-    sourceType: "aggregator",
-    sourceFocus: "brazil",
-    sourceTier: "brazil_public_api",
-    companyName: "Acme",
-    title: "Software Engineer",
-    url: "https://example.com/jobs/1",
-    locationText: "Remote",
-    descriptionText: "",
+    source: 'linkedin',
+    sourceId: 'raw-1',
+    sourceType: 'aggregator',
+    sourceFocus: 'brazil',
+    sourceTier: 'brazil_public_api',
+    companyName: 'Acme',
+    title: 'Software Engineer',
+    url: 'https://example.com/jobs/1',
+    locationText: 'Remote',
+    descriptionText: '',
     tags: [],
     regionHints: [],
     restrictionHints: [],
@@ -79,34 +75,34 @@ function buildJobOpportunity(overrides: Partial<JobOpportunity> = {}): JobOpport
   });
 
   return {
-    id: "job-1",
-    source: "linkedin",
-    sourceId: "job-1",
-    sourceType: "aggregator",
-    sourceFocus: "brazil",
-    sourceTier: "brazil_public_api",
-    companyName: "Acme",
-    normalizedCompanyName: "acme",
-    title: "Software Engineer",
-    normalizedTitle: "software engineer",
-    url: "https://example.com/jobs/1",
-    locationText: "Remote",
-    descriptionText: "",
-    discoveredAt: "2026-05-05T00:00:00.000Z",
+    id: 'job-1',
+    source: 'linkedin',
+    sourceId: 'job-1',
+    sourceType: 'aggregator',
+    sourceFocus: 'brazil',
+    sourceTier: 'brazil_public_api',
+    companyName: 'Acme',
+    normalizedCompanyName: 'acme',
+    title: 'Software Engineer',
+    normalizedTitle: 'software engineer',
+    url: 'https://example.com/jobs/1',
+    locationText: 'Remote',
+    descriptionText: '',
+    discoveredAt: '2026-05-05T00:00:00.000Z',
     tags: [],
     metadata: {},
     roleMatches: [],
-    remotePolicy: "remote",
+    remotePolicy: 'remote',
     remoteConfidence: 1,
     remoteRegions: [],
-    regionFit: "brazil_or_latam",
-    jobMarket: "brazil",
-    brazilLocationPriority: "none",
+    regionFit: 'brazil_or_latam',
+    jobMarket: 'brazil',
+    brazilLocationPriority: 'none',
     marketSignals: [],
-    visaSignal: "not_mentioned",
+    visaSignal: 'not_mentioned',
     restrictionSignals: [],
-    seniority: "senior",
-    roleCategory: "software_engineering",
+    seniority: 'senior',
+    roleCategory: 'software_engineering',
     stackSignals: [],
     sourceQualityRank: 10,
     isRelevant: true,
@@ -119,16 +115,14 @@ function buildJobOpportunity(overrides: Partial<JobOpportunity> = {}): JobOpport
   };
 }
 
-function buildJobForGroup(
-  options: {
-    id: string;
-    seniority: SeniorityLevel;
-    roleCategory: RoleCategory;
-    score: number;
-    company: string;
-    title: string;
-  },
-): JobOpportunity {
+function buildJobForGroup(options: {
+  id: string;
+  seniority: SeniorityLevel;
+  roleCategory: RoleCategory;
+  score: number;
+  company: string;
+  title: string;
+}): JobOpportunity {
   return buildJobOpportunity({
     id: options.id,
     sourceId: options.id,
@@ -140,8 +134,8 @@ function buildJobForGroup(
     normalizedCompanyName: options.company.toLowerCase(),
     normalizedTitle: options.title.toLowerCase(),
     url: `https://example.com/jobs/${options.id}`,
-    publishedAt: "2026-05-01T00:00:00.000Z",
-    stackSignals: ["typescript", "node"],
+    publishedAt: '2026-05-01T00:00:00.000Z',
+    stackSignals: ['typescript', 'node'],
   });
 }
 
@@ -150,184 +144,184 @@ function buildJobForGroup(
 const CANONICAL_GROUPS: CsvSeniorityJobGroupsV2 = {
   junior: [
     buildJobForGroup({
-      id: "jun-1",
-      seniority: "junior",
-      roleCategory: "software_engineering",
+      id: 'jun-1',
+      seniority: 'junior',
+      roleCategory: 'software_engineering',
       score: 95,
-      company: "AlphaCo",
-      title: "Junior Software Engineer",
+      company: 'AlphaCo',
+      title: 'Junior Software Engineer',
     }),
     buildJobForGroup({
-      id: "jun-2",
-      seniority: "junior",
-      roleCategory: "software_engineering",
+      id: 'jun-2',
+      seniority: 'junior',
+      roleCategory: 'software_engineering',
       score: 80,
-      company: "BetaCo",
-      title: "Junior Backend Developer",
+      company: 'BetaCo',
+      title: 'Junior Backend Developer',
     }),
     buildJobForGroup({
-      id: "jun-3",
-      seniority: "junior",
-      roleCategory: "software_engineering",
+      id: 'jun-3',
+      seniority: 'junior',
+      roleCategory: 'software_engineering',
       score: 70,
-      company: "GammaCo",
-      title: "Junior Full Stack",
+      company: 'GammaCo',
+      title: 'Junior Full Stack',
     }),
   ],
   pleno: [
     buildJobForGroup({
-      id: "ple-1",
-      seniority: "mid_level",
-      roleCategory: "software_engineering",
+      id: 'ple-1',
+      seniority: 'mid_level',
+      roleCategory: 'software_engineering',
       score: 90,
-      company: "DeltaCo",
-      title: "Pleno Software Engineer",
+      company: 'DeltaCo',
+      title: 'Pleno Software Engineer',
     }),
     buildJobForGroup({
-      id: "ple-2",
-      seniority: "mid_level",
-      roleCategory: "software_engineering",
+      id: 'ple-2',
+      seniority: 'mid_level',
+      roleCategory: 'software_engineering',
       score: 85,
-      company: "EpsilonCo",
-      title: "Mid-level Backend",
+      company: 'EpsilonCo',
+      title: 'Mid-level Backend',
     }),
     buildJobForGroup({
-      id: "ple-3",
-      seniority: "mid_level",
-      roleCategory: "software_engineering",
+      id: 'ple-3',
+      seniority: 'mid_level',
+      roleCategory: 'software_engineering',
       score: 75,
-      company: "ZetaCo",
-      title: "Pleno Full Stack Engineer",
+      company: 'ZetaCo',
+      title: 'Pleno Full Stack Engineer',
     }),
   ],
   senior: [
     buildJobForGroup({
-      id: "sen-1",
-      seniority: "senior",
-      roleCategory: "software_engineering",
+      id: 'sen-1',
+      seniority: 'senior',
+      roleCategory: 'software_engineering',
       score: 100,
-      company: "EtaCo",
-      title: "Senior Software Engineer",
+      company: 'EtaCo',
+      title: 'Senior Software Engineer',
     }),
     buildJobForGroup({
-      id: "sen-2",
-      seniority: "lead",
-      roleCategory: "tech_lead",
+      id: 'sen-2',
+      seniority: 'lead',
+      roleCategory: 'tech_lead',
       score: 92,
-      company: "ThetaCo",
-      title: "Tech Lead",
+      company: 'ThetaCo',
+      title: 'Tech Lead',
     }),
     buildJobForGroup({
-      id: "sen-3",
-      seniority: "senior",
-      roleCategory: "software_engineering",
+      id: 'sen-3',
+      seniority: 'senior',
+      roleCategory: 'software_engineering',
       score: 88,
-      company: "IotaCo",
-      title: "Senior Backend Engineer",
+      company: 'IotaCo',
+      title: 'Senior Backend Engineer',
     }),
   ],
   staff: [
     buildJobForGroup({
-      id: "sta-1",
-      seniority: "staff",
-      roleCategory: "software_engineering",
+      id: 'sta-1',
+      seniority: 'staff',
+      roleCategory: 'software_engineering',
       score: 110,
-      company: "KappaCo",
-      title: "Staff Software Engineer",
+      company: 'KappaCo',
+      title: 'Staff Software Engineer',
     }),
     buildJobForGroup({
-      id: "sta-2",
-      seniority: "principal",
-      roleCategory: "software_engineering",
+      id: 'sta-2',
+      seniority: 'principal',
+      roleCategory: 'software_engineering',
       score: 105,
-      company: "LambdaCo",
-      title: "Principal Engineer",
+      company: 'LambdaCo',
+      title: 'Principal Engineer',
     }),
     buildJobForGroup({
-      id: "sta-3",
-      seniority: "staff_or_principal",
-      roleCategory: "software_engineering",
+      id: 'sta-3',
+      seniority: 'staff_or_principal',
+      roleCategory: 'software_engineering',
       score: 95,
-      company: "MuCo",
-      title: "Staff / Principal Engineer",
+      company: 'MuCo',
+      title: 'Staff / Principal Engineer',
     }),
   ],
   arq: [
     buildJobForGroup({
-      id: "arq-1",
-      seniority: "architect",
-      roleCategory: "software_architecture",
+      id: 'arq-1',
+      seniority: 'architect',
+      roleCategory: 'software_architecture',
       score: 115,
-      company: "NuCo",
-      title: "Software Architect",
+      company: 'NuCo',
+      title: 'Software Architect',
     }),
     buildJobForGroup({
-      id: "arq-2",
-      seniority: "senior",
-      roleCategory: "cloud_architecture",
+      id: 'arq-2',
+      seniority: 'senior',
+      roleCategory: 'cloud_architecture',
       score: 100,
-      company: "XiCo",
-      title: "Cloud Architect",
+      company: 'XiCo',
+      title: 'Cloud Architect',
     }),
     buildJobForGroup({
-      id: "arq-3",
-      seniority: "lead",
-      roleCategory: "solutions_architecture",
+      id: 'arq-3',
+      seniority: 'lead',
+      roleCategory: 'solutions_architecture',
       score: 90,
-      company: "OmicronCo",
-      title: "Solutions Architect",
+      company: 'OmicronCo',
+      title: 'Solutions Architect',
     }),
   ],
   qa: [
     buildJobForGroup({
-      id: "qa-1",
-      seniority: "senior",
-      roleCategory: "qa",
+      id: 'qa-1',
+      seniority: 'senior',
+      roleCategory: 'qa',
       score: 95,
-      company: "PiCo",
-      title: "Senior QA Engineer",
+      company: 'PiCo',
+      title: 'Senior QA Engineer',
     }),
     buildJobForGroup({
-      id: "qa-2",
-      seniority: "mid_level",
-      roleCategory: "qa",
+      id: 'qa-2',
+      seniority: 'mid_level',
+      roleCategory: 'qa',
       score: 80,
-      company: "RhoCo",
-      title: "QA Engineer",
+      company: 'RhoCo',
+      title: 'QA Engineer',
     }),
     buildJobForGroup({
-      id: "qa-3",
-      seniority: "junior",
-      roleCategory: "qa",
+      id: 'qa-3',
+      seniority: 'junior',
+      roleCategory: 'qa',
       score: 70,
-      company: "SigmaCo",
-      title: "Junior QA / SDET",
+      company: 'SigmaCo',
+      title: 'Junior QA / SDET',
     }),
   ],
   devops: [
     buildJobForGroup({
-      id: "dev-1",
-      seniority: "senior",
-      roleCategory: "devops",
+      id: 'dev-1',
+      seniority: 'senior',
+      roleCategory: 'devops',
       score: 100,
-      company: "TauCo",
-      title: "Senior DevOps Engineer",
+      company: 'TauCo',
+      title: 'Senior DevOps Engineer',
     }),
     buildJobForGroup({
-      id: "dev-2",
-      seniority: "staff",
-      roleCategory: "devops",
+      id: 'dev-2',
+      seniority: 'staff',
+      roleCategory: 'devops',
       score: 105,
-      company: "UpsilonCo",
-      title: "Staff Platform Engineer",
+      company: 'UpsilonCo',
+      title: 'Staff Platform Engineer',
     }),
     buildJobForGroup({
-      id: "dev-3",
-      seniority: "lead",
-      roleCategory: "devops",
+      id: 'dev-3',
+      seniority: 'lead',
+      roleCategory: 'devops',
       score: 90,
-      company: "PhiCo",
-      title: "SRE Lead",
+      company: 'PhiCo',
+      title: 'SRE Lead',
     }),
   ],
 };
@@ -347,10 +341,10 @@ const EMPTY_GROUPS: CsvSeniorityJobGroupsV2 = {
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
+describe('CsvReportGenerator.generateFromSeniorityGroupsV2', () => {
   const generator = new CsvReportGenerator();
 
-  it("returns null for every empty group", () => {
+  it('returns null for every empty group', () => {
     const result = generator.generateFromSeniorityGroupsV2(EMPTY_GROUPS);
 
     expect(result).toStrictEqual({
@@ -361,17 +355,18 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
       arq: null,
       qa: null,
       devops: null,
+      management: null,
     });
   });
 
-  it("returns null for groups with an empty array even when siblings are populated", () => {
+  it('returns null for groups with an empty array even when siblings are populated', () => {
     const result = generator.generateFromSeniorityGroupsV2({
       ...EMPTY_GROUPS,
       junior: CANONICAL_GROUPS.junior,
     });
 
     expect(result.junior).not.toBeNull();
-    expect(result.junior).toContain("report_group");
+    expect(result.junior).toContain('report_group');
     // Empty siblings must remain null, not empty strings or header-only CSVs.
     expect(result.pleno).toBeNull();
     expect(result.senior).toBeNull();
@@ -381,38 +376,30 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
     expect(result.devops).toBeNull();
   });
 
-  it.each([
-    ["junior"],
-    ["pleno"],
-    ["senior"],
-    ["staff"],
-    ["arq"],
-    ["qa"],
-    ["devops"],
-  ] as const)(
-    "emits a CSV for the %s group whose header ends in report_group and whose rows carry that group value",
+  it.each([['junior'], ['pleno'], ['senior'], ['staff'], ['arq'], ['qa'], ['devops']] as const)(
+    'emits a CSV for the %s group whose header ends in report_group and whose rows carry that group value',
     (group) => {
       const result = generator.generateFromSeniorityGroupsV2(CANONICAL_GROUPS);
       const csv = result[group];
 
       expect(csv).not.toBeNull();
-      const [header, ...dataRows] = (csv as string).split("\n");
+      const [header, ...dataRows] = (csv as string).split('\n');
 
       // Header always ends with `report_group` — the new V2 column.
-      expect(header.endsWith(",report_group")).toBe(true);
+      expect(header.endsWith(',report_group')).toBe(true);
 
       // Exactly 3 data rows per group (we built 3 fixtures each).
       expect(dataRows).toHaveLength(3);
 
       // The last column of each row must equal the group key.
       for (const row of dataRows) {
-        const cells = row.split(",");
+        const cells = row.split(',');
         expect(cells.at(-1)).toBe(group);
       }
     },
   );
 
-  it("snapshot: junior group CSV", () => {
+  it('snapshot: junior group CSV', () => {
     const { junior } = generator.generateFromSeniorityGroupsV2(CANONICAL_GROUPS);
     expect(junior).toMatchInlineSnapshot(`
       "rank,fit,score,company,title,url,source,location,fit_reason,job_market,seniority,stack_signals,published_at,report_group
@@ -422,7 +409,7 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
     `);
   });
 
-  it("snapshot: pleno group CSV", () => {
+  it('snapshot: pleno group CSV', () => {
     const { pleno } = generator.generateFromSeniorityGroupsV2(CANONICAL_GROUPS);
     expect(pleno).toMatchInlineSnapshot(`
       "rank,fit,score,company,title,url,source,location,fit_reason,job_market,seniority,stack_signals,published_at,report_group
@@ -432,7 +419,7 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
     `);
   });
 
-  it("snapshot: senior group CSV", () => {
+  it('snapshot: senior group CSV', () => {
     const { senior } = generator.generateFromSeniorityGroupsV2(CANONICAL_GROUPS);
     expect(senior).toMatchInlineSnapshot(`
       "rank,fit,score,company,title,url,source,location,fit_reason,job_market,seniority,stack_signals,published_at,report_group
@@ -442,7 +429,7 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
     `);
   });
 
-  it("snapshot: staff group CSV", () => {
+  it('snapshot: staff group CSV', () => {
     const { staff } = generator.generateFromSeniorityGroupsV2(CANONICAL_GROUPS);
     expect(staff).toMatchInlineSnapshot(`
       "rank,fit,score,company,title,url,source,location,fit_reason,job_market,seniority,stack_signals,published_at,report_group
@@ -452,7 +439,7 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
     `);
   });
 
-  it("snapshot: arq group CSV", () => {
+  it('snapshot: arq group CSV', () => {
     const { arq } = generator.generateFromSeniorityGroupsV2(CANONICAL_GROUPS);
     expect(arq).toMatchInlineSnapshot(`
       "rank,fit,score,company,title,url,source,location,fit_reason,job_market,seniority,stack_signals,published_at,report_group
@@ -462,7 +449,7 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
     `);
   });
 
-  it("snapshot: qa group CSV", () => {
+  it('snapshot: qa group CSV', () => {
     const { qa } = generator.generateFromSeniorityGroupsV2(CANONICAL_GROUPS);
     expect(qa).toMatchInlineSnapshot(`
       "rank,fit,score,company,title,url,source,location,fit_reason,job_market,seniority,stack_signals,published_at,report_group
@@ -472,7 +459,7 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
     `);
   });
 
-  it("snapshot: devops group CSV", () => {
+  it('snapshot: devops group CSV', () => {
     const { devops } = generator.generateFromSeniorityGroupsV2(CANONICAL_GROUPS);
     expect(devops).toMatchInlineSnapshot(`
       "rank,fit,score,company,title,url,source,location,fit_reason,job_market,seniority,stack_signals,published_at,report_group
@@ -483,39 +470,39 @@ describe("CsvReportGenerator.generateFromSeniorityGroupsV2", () => {
   });
 });
 
-describe("CsvReportGenerator.generate (full report.csv)", () => {
+describe('CsvReportGenerator.generate (full report.csv)', () => {
   const generator = new CsvReportGenerator();
 
-  it("appends report_group column populated per row", () => {
+  it('appends report_group column populated per row', () => {
     const allJobs = [
       ...CANONICAL_GROUPS.junior,
       ...CANONICAL_GROUPS.devops,
       ...CANONICAL_GROUPS.arq,
     ];
     const csv = generator.generate(allJobs);
-    const [header, ...rows] = csv.split("\n");
+    const [header, ...rows] = csv.split('\n');
 
-    expect(header.endsWith(",report_group")).toBe(true);
+    expect(header.endsWith(',report_group')).toBe(true);
     expect(rows).toHaveLength(allJobs.length);
 
     const groupsInOrder = rows.map((row) => {
-      const cells = row.split(",");
+      const cells = row.split(',');
       return cells.at(-1);
     });
     expect(groupsInOrder).toStrictEqual([
-      "junior",
-      "junior",
-      "junior",
-      "devops",
-      "devops",
-      "devops",
-      "arq",
-      "arq",
-      "arq",
+      'junior',
+      'junior',
+      'junior',
+      'devops',
+      'devops',
+      'devops',
+      'arq',
+      'arq',
+      'arq',
     ]);
   });
 
-  it("snapshot: full report.csv with mixed groups", () => {
+  it('snapshot: full report.csv with mixed groups', () => {
     const mixed = [
       CANONICAL_GROUPS.senior[0],
       CANONICAL_GROUPS.pleno[0],
@@ -534,107 +521,110 @@ describe("CsvReportGenerator.generate (full report.csv)", () => {
   });
 });
 
-
 // Feature: browsermcp-job-search-engine, Property 6: Bound e monotonicidade por grupo no CSV V2
-describe("Property 6 — bound + monotonicity", () => {
+describe('Property 6 — bound + monotonicity', () => {
   const generator = new CsvReportGenerator();
   const seniorityReportTargetJobs = 50;
 
   // **Validates: Requirements 10.3, 15.6, 15.8**
-  it("each group CSV has at most seniorityReportTargetJobs rows and scores are monotonically decreasing", { timeout: 30_000 }, () => {
-    const groupKeys: Array<keyof CsvSeniorityJobGroupsV2> = [
-      "junior",
-      "pleno",
-      "senior",
-      "staff",
-      "arq",
-      "qa",
-      "devops",
-      "management",
-    ];
+  it(
+    'each group CSV has at most seniorityReportTargetJobs rows and scores are monotonically decreasing',
+    { timeout: 30_000 },
+    () => {
+      const groupKeys: Array<keyof CsvSeniorityJobGroupsV2> = [
+        'junior',
+        'pleno',
+        'senior',
+        'staff',
+        'arq',
+        'qa',
+        'devops',
+        'management',
+      ];
 
-    // Generate an arbitrary for CsvSeniorityJobGroupsV2 where each group
-    // contains jobs sorted by score descending and limited to seniorityReportTargetJobs,
-    // simulating what the pipeline does before calling the generator.
-    const groupsArb = fc
-      .record({
-        junior: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
-        pleno: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
-        senior: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
-        staff: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
-        arq: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
-        qa: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
-        devops: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
-        management: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
-      })
-      .map((groups) => {
-        // Simulate pipeline: sort by score descending, limit to seniorityReportTargetJobs
-        const result: CsvSeniorityJobGroupsV2 = {
-          junior: [],
-          pleno: [],
-          senior: [],
-          staff: [],
-          arq: [],
-          qa: [],
-          devops: [],
-          management: [],
-        };
-        for (const key of groupKeys) {
-          result[key] = groups[key]
-            .sort((a, b) => b.score - a.score)
-            .slice(0, seniorityReportTargetJobs);
-        }
-        return result;
-      });
-
-    fc.assert(
-      fc.property(groupsArb, (groups) => {
-        const csvReports = generator.generateFromSeniorityGroupsV2(groups);
-
-        for (const key of groupKeys) {
-          const csv = csvReports[key];
-          if (csv === null) {
-            // Empty group produces null — no rows to check.
-            continue;
+      // Generate an arbitrary for CsvSeniorityJobGroupsV2 where each group
+      // contains jobs sorted by score descending and limited to seniorityReportTargetJobs,
+      // simulating what the pipeline does before calling the generator.
+      const groupsArb = fc
+        .record({
+          junior: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
+          pleno: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
+          senior: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
+          staff: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
+          arq: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
+          qa: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
+          devops: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
+          management: fc.array(jobOpportunityArb, { minLength: 0, maxLength: 8 }),
+        })
+        .map((groups) => {
+          // Simulate pipeline: sort by score descending, limit to seniorityReportTargetJobs
+          const result: CsvSeniorityJobGroupsV2 = {
+            junior: [],
+            pleno: [],
+            senior: [],
+            staff: [],
+            arq: [],
+            qa: [],
+            devops: [],
+            management: [],
+          };
+          for (const key of groupKeys) {
+            result[key] = groups[key]
+              .sort((a, b) => b.score - a.score)
+              .slice(0, seniorityReportTargetJobs);
           }
+          return result;
+        });
 
-          const lines = csv.split("\n");
-          const [_header, ...dataRows] = lines;
+      fc.assert(
+        fc.property(groupsArb, (groups) => {
+          const csvReports = generator.generateFromSeniorityGroupsV2(groups);
 
-          // (a) Bound: number of data rows <= seniorityReportTargetJobs (default 50)
-          expect(dataRows.length).toBeLessThanOrEqual(seniorityReportTargetJobs);
+          for (const key of groupKeys) {
+            const csv = csvReports[key];
+            if (csv === null) {
+              // Empty group produces null — no rows to check.
+              continue;
+            }
 
-          // (b) Monotonicity: scores in consecutive rows are non-increasing
-          const scores = dataRows.map((row) => {
-            const cells = row.split(",");
-            return Number(cells[2]); // score is the 3rd column (index 2)
-          });
+            const lines = csv.split('\n');
+            const [_header, ...dataRows] = lines;
 
-          for (let i = 0; i < scores.length - 1; i++) {
-            expect(scores[i]).toBeGreaterThanOrEqual(scores[i + 1]);
+            // (a) Bound: number of data rows <= seniorityReportTargetJobs (default 50)
+            expect(dataRows.length).toBeLessThanOrEqual(seniorityReportTargetJobs);
+
+            // (b) Monotonicity: scores in consecutive rows are non-increasing
+            const scores = dataRows.map((row) => {
+              const cells = row.split(',');
+              return Number(cells[2]); // score is the 3rd column (index 2)
+            });
+
+            for (let i = 0; i < scores.length - 1; i++) {
+              expect(scores[i]).toBeGreaterThanOrEqual(scores[i + 1]);
+            }
           }
-        }
-      }),
-      { numRuns: 100 },
-    );
-  });
+        }),
+        { numRuns: 100 },
+      );
+    },
+  );
 });
 
 // Feature: browsermcp-job-search-engine, Property 7: Invariante de score mínimo por grupo
-describe("Property 7 — min score invariant", () => {
+describe('Property 7 — min score invariant', () => {
   const generator = new CsvReportGenerator();
 
   // **Validates: Requirements 11.5, 15.7**
-  it("every row in every group CSV has score >= minReportScore", { timeout: 30_000 }, () => {
+  it('every row in every group CSV has score >= minReportScore', { timeout: 30_000 }, () => {
     const groupKeys: Array<keyof CsvSeniorityJobGroupsV2> = [
-      "junior",
-      "pleno",
-      "senior",
-      "staff",
-      "arq",
-      "qa",
-      "devops",
-      "management",
+      'junior',
+      'pleno',
+      'senior',
+      'staff',
+      'arq',
+      'qa',
+      'devops',
+      'management',
     ];
 
     // minReportScore varies between 0 and 100
@@ -677,11 +667,11 @@ describe("Property 7 — min score invariant", () => {
             continue;
           }
 
-          const lines = csv.split("\n");
+          const lines = csv.split('\n');
           const [_header, ...dataRows] = lines;
 
           for (const row of dataRows) {
-            const cells = row.split(",");
+            const cells = row.split(',');
             const score = Number(cells[2]); // score is the 3rd column (index 2)
             expect(score).toBeGreaterThanOrEqual(minReportScore);
           }

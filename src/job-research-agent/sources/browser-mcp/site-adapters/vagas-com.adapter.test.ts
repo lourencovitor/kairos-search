@@ -1,25 +1,25 @@
-import { readFileSync } from "node:fs";
-import path from "node:path";
+// ---------------------------------------------------------------------------
+// Property 2 — URL round-trip
+// Feature: browsermcp-job-search-engine, Property 2: URL round-trip nas saídas da engine
+// ---------------------------------------------------------------------------
 
-import { describe, expect, it, vi } from "vitest";
+import fc from 'fast-check';
+import { describe, expect, it, vi } from 'vitest';
 
-import type { BrowserMcpClientLike, BrowserMcpSiteConfig } from "../browser-mcp.types.js";
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 
-import { APPLY_BUTTON_SELECTORS, VagasComAdapter } from "./vagas-com.adapter.js";
+import { normalizeJobUrl } from '../../../shared/job.util.js';
+import type { BrowserMcpClientLike, BrowserMcpSiteConfig } from '../browser-mcp.types.js';
+import { APPLY_BUTTON_SELECTORS, VagasComAdapter } from './vagas-com.adapter.js';
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function loadFixture(name: string): string {
-  const filePath = path.resolve(
-    process.cwd(),
-    "test-fixtures",
-    "browser-mcp",
-    "vagas-com",
-    name,
-  );
-  return readFileSync(filePath, "utf-8");
+  const filePath = path.resolve(process.cwd(), 'test-fixtures', 'browser-mcp', 'vagas-com', name);
+  return readFileSync(filePath, 'utf-8');
 }
 
 function buildMockClient(fixtureHtml: string): BrowserMcpClientLike & {
@@ -32,8 +32,8 @@ function buildMockClient(fixtureHtml: string): BrowserMcpClientLike & {
   return {
     navigate: vi.fn(async () => {}),
     snapshot: vi.fn(async () => ({
-      url: "https://www.vagas.com.br/vagas-de-desenvolvedor",
-      title: "Vagas de Desenvolvedor | Vagas.com.br",
+      url: 'https://www.vagas.com.br/vagas-de-desenvolvedor',
+      title: 'Vagas de Desenvolvedor | Vagas.com.br',
       domHtml: fixtureHtml,
     })),
     click: vi.fn(async () => {}),
@@ -45,7 +45,7 @@ function buildMockClient(fixtureHtml: string): BrowserMcpClientLike & {
 function buildSiteConfig(overrides: Partial<BrowserMcpSiteConfig> = {}): BrowserMcpSiteConfig {
   return {
     enabled: true,
-    searchQueries: ["desenvolvedor"],
+    searchQueries: ['desenvolvedor'],
     maxPagesPerQuery: 1,
     rateLimitMs: 0,
     maxJobs: 200,
@@ -76,9 +76,9 @@ function buildContext(
 // Happy path
 // ---------------------------------------------------------------------------
 
-describe("VagasComAdapter happy-path fixture", () => {
-  it("extrai 3 vagas com shape canônico", async () => {
-    const client = buildMockClient(loadFixture("happy-path.html"));
+describe('VagasComAdapter happy-path fixture', () => {
+  it('extrai 3 vagas com shape canônico', async () => {
+    const client = buildMockClient(loadFixture('happy-path.html'));
     const adapter = new VagasComAdapter();
 
     const result = await adapter.collect(buildContext(client, buildSiteConfig()));
@@ -88,34 +88,34 @@ describe("VagasComAdapter happy-path fixture", () => {
     expect(result.summary.fetchedJobs).toBe(3);
 
     for (const job of result.jobs) {
-      expect(job.source).toBe("browser_mcp");
-      expect(job.sourceBoard).toBe("vagas-com-browser-mcp");
-      expect(job.sourceType).toBe("aggregator");
-      expect(job.sourceFocus).toBe("brazil");
-      expect(job.sourceTier).toBe("brazil_public_api");
+      expect(job.source).toBe('browser_mcp');
+      expect(job.sourceBoard).toBe('vagas-com-browser-mcp');
+      expect(job.sourceType).toBe('aggregator');
+      expect(job.sourceFocus).toBe('brazil');
+      expect(job.sourceTier).toBe('brazil_public_api');
       expect(job.sourceQualityRank).toBe(16);
       expect(job.sourceId).toMatch(/^vagas_com:\d+$/);
-      expect(job.url).toContain("vagas.com.br");
+      expect(job.url).toContain('vagas.com.br');
       expect(() => new URL(job.url)).not.toThrow();
       expect(job.companyName.length).toBeGreaterThan(0);
       expect(job.title.length).toBeGreaterThan(0);
-      expect(job.descriptionText).toBe("");
+      expect(job.descriptionText).toBe('');
       expect(job.tags).toEqual([]);
       expect(job.regionHints).toEqual([]);
       expect(job.restrictionHints).toEqual([]);
       expect(job.curationNotes).toEqual([]);
       expect(job.raw).toBeNull();
       expect(job.metadata).toEqual({
-        browserMcp: { siteId: "vagas_com", query: "desenvolvedor" },
+        browserMcp: { siteId: 'vagas_com', query: 'desenvolvedor' },
       });
     }
 
     const ids = result.jobs.map((j) => j.sourceId);
-    expect(ids).toEqual(["vagas_com:2345678", "vagas_com:9876543", "vagas_com:1112233"]);
+    expect(ids).toEqual(['vagas_com:2345678', 'vagas_com:9876543', 'vagas_com:1112233']);
   });
 
-  it("não clica em nenhum seletor (incluindo os de Apply) durante o happy-path", async () => {
-    const client = buildMockClient(loadFixture("happy-path.html"));
+  it('não clica em nenhum seletor (incluindo os de Apply) durante o happy-path', async () => {
+    const client = buildMockClient(loadFixture('happy-path.html'));
     const adapter = new VagasComAdapter();
 
     await adapter.collect(buildContext(client, buildSiteConfig()));
@@ -131,9 +131,9 @@ describe("VagasComAdapter happy-path fixture", () => {
 // Login wall
 // ---------------------------------------------------------------------------
 
-describe("VagasComAdapter login-wall fixture", () => {
-  it("marca requires_manual_login e retorna zero vagas sem tentar mais páginas", async () => {
-    const client = buildMockClient(loadFixture("login-wall.html"));
+describe('VagasComAdapter login-wall fixture', () => {
+  it('marca requires_manual_login e retorna zero vagas sem tentar mais páginas', async () => {
+    const client = buildMockClient(loadFixture('login-wall.html'));
     const adapter = new VagasComAdapter();
 
     const result = await adapter.collect(
@@ -141,7 +141,7 @@ describe("VagasComAdapter login-wall fixture", () => {
     );
 
     expect(result.jobs).toHaveLength(0);
-    expect(result.summary.error).toBe("requires_manual_login");
+    expect(result.summary.error).toBe('requires_manual_login');
     expect(client.navigate).toHaveBeenCalledTimes(1);
   });
 });
@@ -150,15 +150,15 @@ describe("VagasComAdapter login-wall fixture", () => {
 // Captcha
 // ---------------------------------------------------------------------------
 
-describe("VagasComAdapter captcha fixture", () => {
-  it("marca rate_limited_or_captcha e retorna zero vagas", async () => {
-    const client = buildMockClient(loadFixture("captcha.html"));
+describe('VagasComAdapter captcha fixture', () => {
+  it('marca rate_limited_or_captcha e retorna zero vagas', async () => {
+    const client = buildMockClient(loadFixture('captcha.html'));
     const adapter = new VagasComAdapter();
 
     const result = await adapter.collect(buildContext(client, buildSiteConfig()));
 
     expect(result.jobs).toHaveLength(0);
-    expect(result.summary.error).toBe("rate_limited_or_captcha");
+    expect(result.summary.error).toBe('rate_limited_or_captcha');
   });
 });
 
@@ -166,29 +166,27 @@ describe("VagasComAdapter captcha fixture", () => {
 // Pagination
 // ---------------------------------------------------------------------------
 
-describe("VagasComAdapter pagination", () => {
-  it("navega para ?pagina=N em páginas subsequentes", async () => {
-    const client = buildMockClient(loadFixture("happy-path.html"));
+describe('VagasComAdapter pagination', () => {
+  it('navega para ?pagina=N em páginas subsequentes', async () => {
+    const client = buildMockClient(loadFixture('happy-path.html'));
     const adapter = new VagasComAdapter();
 
-    await adapter.collect(
-      buildContext(client, buildSiteConfig({ maxPagesPerQuery: 3 })),
-    );
+    await adapter.collect(buildContext(client, buildSiteConfig({ maxPagesPerQuery: 3 })));
 
     expect(client.navigate).toHaveBeenCalledTimes(3);
 
     // First page: no pagina param
     const firstUrl = client.navigate.mock.calls[0][1] as string;
-    expect(firstUrl).toContain("vagas-de-desenvolvedor");
-    expect(firstUrl).not.toContain("pagina=");
+    expect(firstUrl).toContain('vagas-de-desenvolvedor');
+    expect(firstUrl).not.toContain('pagina=');
 
     // Second page
     const secondUrl = client.navigate.mock.calls[1][1] as string;
-    expect(secondUrl).toContain("pagina=2");
+    expect(secondUrl).toContain('pagina=2');
 
     // Third page
     const thirdUrl = client.navigate.mock.calls[2][1] as string;
-    expect(thirdUrl).toContain("pagina=3");
+    expect(thirdUrl).toContain('pagina=3');
   });
 });
 
@@ -196,32 +194,29 @@ describe("VagasComAdapter pagination", () => {
 // marketHint
 // ---------------------------------------------------------------------------
 
-describe("VagasComAdapter marketHint", () => {
+describe('VagasComAdapter marketHint', () => {
   it("define marketHint='brazil' quando locationText contém termos brasileiros", async () => {
-    const client = buildMockClient(loadFixture("happy-path.html"));
+    const client = buildMockClient(loadFixture('happy-path.html'));
     const adapter = new VagasComAdapter();
 
     const result = await adapter.collect(buildContext(client, buildSiteConfig()));
 
     // "São Paulo, SP" → brazil
-    expect(result.jobs[0].marketHint).toBe("brazil");
+    expect(result.jobs[0].marketHint).toBe('brazil');
     // "Remoto - Brasil" → brazil
-    expect(result.jobs[1].marketHint).toBe("brazil");
+    expect(result.jobs[1].marketHint).toBe('brazil');
     // "Rio de Janeiro, RJ" → brazil
-    expect(result.jobs[2].marketHint).toBe("brazil");
+    expect(result.jobs[2].marketHint).toBe('brazil');
   });
 
-  it("não define marketHint quando locationText não contém termos brasileiros", async () => {
+  it('não define marketHint quando locationText não contém termos brasileiros', async () => {
     const htmlWithForeignLocation = `
-      <div class="job-list">
-        <a class="link-detalhes-vaga" href="https://www.vagas.com.br/vagas/v55555-frontend-dev">
-          <div class="vaga">
-            <h2 class="cargo">Frontend Dev</h2>
-            <span class="emprNome">ForeignCo</span>
-            <span class="vaga-local">New York, USA</span>
-          </div>
+      <section>
+        <a class="link-detalhes-vaga" title="Frontend Dev" href="/vagas/v55555-frontend-dev">
+          <span class="emprVaga">ForeignCo</span>
+          <span class="vaga-local">New York, USA</span>
         </a>
-      </div>
+      </section>
     `;
     const client = buildMockClient(htmlWithForeignLocation);
     const adapter = new VagasComAdapter();
@@ -237,14 +232,14 @@ describe("VagasComAdapter marketHint", () => {
 // sourceId deduplication
 // ---------------------------------------------------------------------------
 
-describe("VagasComAdapter sourceId deduplication", () => {
-  it("produz o mesmo array de sourceId em duas chamadas sucessivas", async () => {
+describe('VagasComAdapter sourceId deduplication', () => {
+  it('produz o mesmo array de sourceId em duas chamadas sucessivas', async () => {
     const adapter = new VagasComAdapter();
 
-    const client1 = buildMockClient(loadFixture("happy-path.html"));
+    const client1 = buildMockClient(loadFixture('happy-path.html'));
     const result1 = await adapter.collect(buildContext(client1, buildSiteConfig()));
 
-    const client2 = buildMockClient(loadFixture("happy-path.html"));
+    const client2 = buildMockClient(loadFixture('happy-path.html'));
     const result2 = await adapter.collect(buildContext(client2, buildSiteConfig()));
 
     const ids1 = result1.jobs.map((j) => j.sourceId);
@@ -252,8 +247,8 @@ describe("VagasComAdapter sourceId deduplication", () => {
     expect(ids1).toEqual(ids2);
   });
 
-  it("deduplica dentro do mesmo ciclo quando a mesma vaga aparece em páginas/queries diferentes", async () => {
-    const html = loadFixture("happy-path.html");
+  it('deduplica dentro do mesmo ciclo quando a mesma vaga aparece em páginas/queries diferentes', async () => {
+    const html = loadFixture('happy-path.html');
     const client = buildMockClient(html);
     const adapter = new VagasComAdapter();
 
@@ -261,7 +256,7 @@ describe("VagasComAdapter sourceId deduplication", () => {
       buildContext(
         client,
         buildSiteConfig({
-          searchQueries: ["desenvolvedor", "engenheiro de software"],
+          searchQueries: ['desenvolvedor', 'engenheiro de software'],
           maxPagesPerQuery: 2,
         }),
       ),
@@ -275,16 +270,7 @@ describe("VagasComAdapter sourceId deduplication", () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Property 2 — URL round-trip
-// Feature: browsermcp-job-search-engine, Property 2: URL round-trip nas saídas da engine
-// ---------------------------------------------------------------------------
-
-import fc from "fast-check";
-
-import { normalizeJobUrl } from "../../../shared/job.util.js";
-
-describe("Property 2 — URL round-trip", () => {
+describe('Property 2 — URL round-trip', () => {
   // **Validates: Requirements 5.2, 15.2**
 
   const jobIdArb = fc.stringMatching(/^\d{4,10}$/);
@@ -293,51 +279,52 @@ describe("Property 2 — URL round-trip", () => {
 
   function buildVagasComHtml(jobId: string, slug: string): string {
     return `
-      <div class="job-list">
-        <a class="link-detalhes-vaga" href="https://www.vagas.com.br/vagas/v${jobId}-${slug}">
-          <div class="vaga">
-            <h2 class="cargo">Test Engineer</h2>
-            <span class="emprNome">Test Corp</span>
-            <span class="vaga-local">São Paulo, SP</span>
-          </div>
+      <section>
+        <a class="link-detalhes-vaga" title="Test Engineer" href="/vagas/v${jobId}-${slug}">
+          <span class="emprVaga">Test Corp</span>
+          <span class="vaga-local">São Paulo, SP</span>
         </a>
-      </div>
+      </section>
     `;
   }
 
-  it("URLs emitidas são válidas, absolutas e normalizeJobUrl é idempotente", { timeout: 30_000 }, async () => {
-    await fc.assert(
-      fc.asyncProperty(jobIdArb, slugArb, async (jobId, slug) => {
-        const html = buildVagasComHtml(jobId, slug);
-        const client: BrowserMcpClientLike = {
-          navigate: vi.fn(async () => {}),
-          snapshot: vi.fn(async () => ({
-            url: "https://www.vagas.com.br/vagas/",
-            title: "Vagas | Vagas.com.br",
-            domHtml: html,
-          })),
-          click: vi.fn(async () => {}),
-          type: vi.fn(async () => {}),
-          remainingPageBudget: vi.fn(() => 100),
-        };
+  it(
+    'URLs emitidas são válidas, absolutas e normalizeJobUrl é idempotente',
+    { timeout: 30_000 },
+    async () => {
+      await fc.assert(
+        fc.asyncProperty(jobIdArb, slugArb, async (jobId, slug) => {
+          const html = buildVagasComHtml(jobId, slug);
+          const client: BrowserMcpClientLike = {
+            navigate: vi.fn(async () => {}),
+            snapshot: vi.fn(async () => ({
+              url: 'https://www.vagas.com.br/vagas/',
+              title: 'Vagas | Vagas.com.br',
+              domHtml: html,
+            })),
+            click: vi.fn(async () => {}),
+            type: vi.fn(async () => {}),
+            remainingPageBudget: vi.fn(() => 100),
+          };
 
-        const adapter = new VagasComAdapter();
-        const result = await adapter.collect(buildContext(client, buildSiteConfig()));
+          const adapter = new VagasComAdapter();
+          const result = await adapter.collect(buildContext(client, buildSiteConfig()));
 
-        for (const job of result.jobs) {
-          // (a) new URL(job.url) não lança
-          const parsed = new URL(job.url);
+          for (const job of result.jobs) {
+            // (a) new URL(job.url) não lança
+            const parsed = new URL(job.url);
 
-          // (b) URL é absoluta
-          expect(parsed.href).toBe(job.url);
+            // (b) URL é absoluta
+            expect(parsed.href).toBe(job.url);
 
-          // (c) normalizeJobUrl é idempotente
-          const once = normalizeJobUrl(job.url, job.sourceId);
-          const twice = normalizeJobUrl(once, job.sourceId);
-          expect(twice).toBe(once);
-        }
-      }),
-      { numRuns: 100 },
-    );
-  });
+            // (c) normalizeJobUrl é idempotente
+            const once = normalizeJobUrl(job.url, job.sourceId);
+            const twice = normalizeJobUrl(once, job.sourceId);
+            expect(twice).toBe(once);
+          }
+        }),
+        { numRuns: 100 },
+      );
+    },
+  );
 });

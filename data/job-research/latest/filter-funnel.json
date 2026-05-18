@@ -1,27 +1,27 @@
 {
   "rawJobs": 5597,
-  "rankedJobs": 738,
-  "rejectedJobs": 4839,
+  "rankedJobs": 734,
+  "rejectedJobs": 4843,
   "rejectedByReason": {
     "Only Brazil-priority markets are allowed in the current mode": 3462,
-    "Title does not match the target role families": 2786,
+    "Title does not match the target role families": 2789,
     "Excluded title category": 1126,
-    "Job is older than 14 days": 865,
-    "Job is older than 45 days": 293,
+    "Job is older than 14 days": 866,
+    "Job is older than 45 days": 298,
     "Hybrid roles are only considered when they are Brazil-based": 263,
     "Onsite roles are only considered when they are Brazil-based": 100,
     "Job is older than 21 days": 6
   },
   "rejectedByReasonCombination": {
-    "Only Brazil-priority markets are allowed in the current mode": 1157,
-    "Title does not match the target role families | Only Brazil-priority markets are allowed in the current mode": 922,
+    "Only Brazil-priority markets are allowed in the current mode": 1156,
+    "Title does not match the target role families | Only Brazil-priority markets are allowed in the current mode": 918,
     "Excluded title category | Title does not match the target role families | Only Brazil-priority markets are allowed in the current mode": 686,
-    "Job is older than 14 days": 582,
-    "Title does not match the target role families": 438,
+    "Job is older than 14 days": 583,
+    "Title does not match the target role families": 441,
     "Title does not match the target role families | Job is older than 14 days": 217,
     "Excluded title category | Title does not match the target role families | Only Brazil-priority markets are allowed in the current mode | Hybrid roles are only considered when they are Brazil-based": 127,
-    "Title does not match the target role families | Job is older than 45 days | Only Brazil-priority markets are allowed in the current mode": 95,
-    "Job is older than 45 days | Only Brazil-priority markets are allowed in the current mode": 78,
+    "Title does not match the target role families | Job is older than 45 days | Only Brazil-priority markets are allowed in the current mode": 99,
+    "Job is older than 45 days | Only Brazil-priority markets are allowed in the current mode": 79,
     "Excluded title category | Title does not match the target role families | Only Brazil-priority markets are allowed in the current mode | Onsite roles are only considered when they are Brazil-based": 66,
     "Excluded title category | Only Brazil-priority markets are allowed in the current mode": 63,
     "Excluded title category | Title does not match the target role families | Job is older than 45 days | Only Brazil-priority markets are allowed in the current mode": 58,
@@ -51,8 +51,8 @@
     "Title does not match the target role families | Job is older than 45 days | Only Brazil-priority markets are allowed in the current mode | Onsite roles are only considered when they are Brazil-based": 1
   },
   "rankedBySource": {
-    "browser_mcp": 394,
-    "himalayas": 249,
+    "browser_mcp": 391,
+    "himalayas": 248,
     "greenhouse": 64,
     "programathor": 13,
     "getonboard": 7,
@@ -62,9 +62,9 @@
   },
   "rejectedBySource": {
     "greenhouse": 2980,
-    "himalayas": 740,
+    "himalayas": 741,
+    "browser_mcp": 367,
     "ashby": 364,
-    "browser_mcp": 364,
     "gupy": 153,
     "remoteok": 97,
     "lever": 68,
@@ -74,12 +74,12 @@
   },
   "rankedByReportGroup": {
     "junior": 28,
-    "pleno": 189,
+    "pleno": 186,
     "senior": 190,
     "staff": 25,
     "arq": 58,
     "qa": 135,
-    "devops": 56,
+    "devops": 55,
     "management": 57,
     "other": 0
   },
@@ -90,8 +90,8 @@
     "staff": 407,
     "arq": 325,
     "qa": 68,
-    "devops": 100,
+    "devops": 101,
     "management": 349,
-    "other": 1951
+    "other": 1954
   }
 }

@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest';
 
+import type { BrowserMcpSiteId } from '../sources/browser-mcp/browser-mcp.types.js';
 import {
+  type JobResearchConfig,
   applyExcludeQaRolesOverride,
   createJobResearchConfig,
   defaultJobResearchConfig,
-  type JobResearchConfig,
 } from './job-research.config.js';
-import type { BrowserMcpSiteId } from '../sources/browser-mcp/browser-mcp.types.js';
 
 const BROWSER_MCP_SITE_IDS: readonly BrowserMcpSiteId[] = [
   'linkedin',
@@ -18,35 +18,36 @@ const BROWSER_MCP_SITE_IDS: readonly BrowserMcpSiteId[] = [
   'gupy_public',
   'trampos_co',
   'revelo',
+  'geekhunter',
 ];
 
 describe('defaultJobResearchConfig — browserMcp defaults', () => {
-  it('has browserMcp.enabled === false', () => {
-    expect(defaultJobResearchConfig.browserMcp.enabled).toBe(false);
+  it('has browserMcp.enabled === true', () => {
+    expect(defaultJobResearchConfig.browserMcp.enabled).toBe(true);
   });
 
-  it('has connectTimeoutMs === 15_000, parallelSites === false, globalMaxPages === 60', () => {
+  it('has connectTimeoutMs === 15_000, parallelSites === true, globalMaxPages === 300', () => {
     expect(defaultJobResearchConfig.browserMcp.connectTimeoutMs).toBe(15_000);
-    expect(defaultJobResearchConfig.browserMcp.parallelSites).toBe(false);
-    expect(defaultJobResearchConfig.browserMcp.globalMaxPages).toBe(60);
+    expect(defaultJobResearchConfig.browserMcp.parallelSites).toBe(true);
+    expect(defaultJobResearchConfig.browserMcp.globalMaxPages).toBe(300);
   });
 
-  it('exposes all 9 site ids', () => {
+  it('exposes all 10 site ids', () => {
     const keys = Object.keys(defaultJobResearchConfig.browserMcp.sites).sort();
     expect(keys).toEqual([...BROWSER_MCP_SITE_IDS].sort());
   });
 
-  it('has enabled === false on all 9 sites', () => {
+  it('has enabled === true on all 10 sites', () => {
     for (const id of BROWSER_MCP_SITE_IDS) {
-      expect(defaultJobResearchConfig.browserMcp.sites[id].enabled).toBe(false);
+      expect(defaultJobResearchConfig.browserMcp.sites[id].enabled).toBe(true);
     }
   });
 
-  it('has rateLimitMs === 6000 for glassdoor and === 4000 for all other sites', () => {
+  it('has rateLimitMs === 6000 for glassdoor and === 2000 for all other sites', () => {
     expect(defaultJobResearchConfig.browserMcp.sites.glassdoor.rateLimitMs).toBe(6_000);
     for (const id of BROWSER_MCP_SITE_IDS) {
       if (id === 'glassdoor') continue;
-      expect(defaultJobResearchConfig.browserMcp.sites[id].rateLimitMs).toBe(4_000);
+      expect(defaultJobResearchConfig.browserMcp.sites[id].rateLimitMs).toBe(2_000);
     }
   });
 
@@ -114,7 +115,7 @@ describe('applyExcludeQaRolesOverride', () => {
 });
 
 describe('createJobResearchConfig — deep merge of browserMcp', () => {
-  it('deep-merges a partial browserMcp override without wiping the other 8 sites', () => {
+  it('deep-merges a partial browserMcp override without wiping the other 9 sites', () => {
     const config = createJobResearchConfig({
       browserMcp: {
         enabled: true,
@@ -124,17 +125,17 @@ describe('createJobResearchConfig — deep merge of browserMcp', () => {
       } as unknown as JobResearchConfig['browserMcp'],
     });
 
-    // Top-level flag flipped on.
+    // Top-level flag stays on.
     expect(config.browserMcp.enabled).toBe(true);
 
-    // Overridden site flipped on but preserves its other defaults.
+    // Overridden site preserves its other defaults.
     expect(config.browserMcp.sites.linkedin.enabled).toBe(true);
-    expect(config.browserMcp.sites.linkedin.rateLimitMs).toBe(4_000);
+    expect(config.browserMcp.sites.linkedin.rateLimitMs).toBe(2_000);
     expect(config.browserMcp.sites.linkedin.maxJobs).toBe(200);
     expect(config.browserMcp.sites.linkedin.location).toBe('Brazil');
     expect(config.browserMcp.sites.linkedin.searchQueries.length).toBeGreaterThan(0);
 
-    // All 9 keys still present.
+    // All 10 keys still present.
     const keys = Object.keys(config.browserMcp.sites).sort();
     expect(keys).toEqual([...BROWSER_MCP_SITE_IDS].sort());
 
@@ -142,10 +143,10 @@ describe('createJobResearchConfig — deep merge of browserMcp', () => {
     for (const id of BROWSER_MCP_SITE_IDS) {
       if (id === 'linkedin') continue;
       const site = config.browserMcp.sites[id];
-      expect(site.enabled).toBe(false);
+      expect(site.enabled).toBe(true);
       expect(site.maxJobs).toBe(200);
       expect(typeof site.rateLimitMs).toBe('number');
-      expect(site.rateLimitMs).toBe(id === 'glassdoor' ? 6_000 : 4_000);
+      expect(site.rateLimitMs).toBe(id === 'glassdoor' ? 6_000 : 2_000);
       expect(Array.isArray(site.searchQueries)).toBe(true);
       expect(site.searchQueries.length).toBeGreaterThan(0);
       expect(typeof site.maxPagesPerQuery).toBe('number');
@@ -153,8 +154,8 @@ describe('createJobResearchConfig — deep merge of browserMcp', () => {
 
     // Preserves other untouched top-level defaults.
     expect(config.browserMcp.connectTimeoutMs).toBe(15_000);
-    expect(config.browserMcp.parallelSites).toBe(false);
-    expect(config.browserMcp.globalMaxPages).toBe(60);
+    expect(config.browserMcp.parallelSites).toBe(true);
+    expect(config.browserMcp.globalMaxPages).toBe(300);
   });
 
   it('shallow-merges seniorityReportTargetJobsByGroup', () => {

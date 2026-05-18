@@ -1,28 +1,29 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it } from 'vitest';
 
 import {
   BROWSER_MCP_SITE_IDS,
+  type BrowserMcpSiteId,
   ForbiddenSelectorError,
   GlobalPageBudgetExhaustedError,
-  type BrowserMcpSiteId,
-} from "./browser-mcp.types.js";
+} from './browser-mcp.types.js';
 
-describe("BROWSER_MCP_SITE_IDS", () => {
-  it("contém exatamente 9 entradas", () => {
-    expect(BROWSER_MCP_SITE_IDS).toHaveLength(9);
+describe('BROWSER_MCP_SITE_IDS', () => {
+  it('contém exatamente 10 entradas', () => {
+    expect(BROWSER_MCP_SITE_IDS).toHaveLength(10);
   });
 
-  it("cobre todos os 9 literais de BrowserMcpSiteId", () => {
+  it('cobre todos os 10 literais de BrowserMcpSiteId', () => {
     const expectedIds: readonly BrowserMcpSiteId[] = [
-      "linkedin",
-      "programathor",
-      "glassdoor",
-      "vagas_com",
-      "catho",
-      "infojobs_br",
-      "gupy_public",
-      "trampos_co",
-      "revelo",
+      'linkedin',
+      'programathor',
+      'glassdoor',
+      'vagas_com',
+      'catho',
+      'infojobs_br',
+      'gupy_public',
+      'trampos_co',
+      'revelo',
+      'geekhunter',
     ];
 
     for (const expected of expectedIds) {
@@ -32,21 +33,21 @@ describe("BROWSER_MCP_SITE_IDS", () => {
   });
 });
 
-describe("ForbiddenSelectorError", () => {
-  it("é instância de Error e tem name correto", () => {
-    const error = new ForbiddenSelectorError("button.apply");
+describe('ForbiddenSelectorError', () => {
+  it('é instância de Error e tem name correto', () => {
+    const error = new ForbiddenSelectorError('button.apply');
     expect(error).toBeInstanceOf(Error);
     expect(error).toBeInstanceOf(ForbiddenSelectorError);
-    expect(error.name).toBe("ForbiddenSelectorError");
-    expect(error.message).toContain("button.apply");
+    expect(error.name).toBe('ForbiddenSelectorError');
+    expect(error.message).toContain('button.apply');
   });
 });
 
-describe("GlobalPageBudgetExhaustedError", () => {
-  it("é instância de Error e tem name correto", () => {
+describe('GlobalPageBudgetExhaustedError', () => {
+  it('é instância de Error e tem name correto', () => {
     const error = new GlobalPageBudgetExhaustedError();
     expect(error).toBeInstanceOf(Error);
     expect(error).toBeInstanceOf(GlobalPageBudgetExhaustedError);
-    expect(error.name).toBe("GlobalPageBudgetExhaustedError");
+    expect(error.name).toBe('GlobalPageBudgetExhaustedError');
   });
 });

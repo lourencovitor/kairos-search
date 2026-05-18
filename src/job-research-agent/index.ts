@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+
 import type { JobResearchConfig } from './config/job-research.config.js';
 import { defaultJobResearchConfig } from './config/job-research.config.js';
 import type {
@@ -8,6 +9,7 @@ import type {
   JobResearchRunResult,
   JobSelectionSummary,
   JobSourceFocus,
+  JobSourceName,
   JobSourceSummary,
   JobSourceTier,
   RawJobPosting,
@@ -15,45 +17,37 @@ import type {
   SeniorityReportGroupV2,
 } from './domain/job.types.js';
 import { SENIORITY_REPORT_GROUP_V2_ORDER } from './domain/job.types.js';
-import {
-  CsvReportGenerator,
-  type CsvSeniorityJobGroups,
-  type CsvSeniorityJobGroupsV2,
-} from './report/csv-report.generator.js';
+import { CsvReportGenerator, type CsvSeniorityJobGroupsV2 } from './report/csv-report.generator.js';
 import { MarkdownReportGenerator } from './report/markdown-report.generator.js';
 import { isUrlReachable } from './shared/http.util.js';
-import {
-  getSeniorityReportGroup,
-  toSeniorityReportGroupV2,
-} from './shared/job-taxonomy.util.js';
-import { AshbySource } from './sources/ashby.source.js';
-import { GetOnBoardSource } from './sources/getonboard.source.js';
-import { GreenhouseSource } from './sources/greenhouse.source.js';
-import { GupySource } from './sources/gupy.source.js';
-import { HimalayasSource } from './sources/himalayas.source.js';
-import { LeverSource } from './sources/lever.source.js';
-import { LinkedInSource } from './sources/linkedin.source.js';
-import { ManualJobInputSource } from './sources/manual-job-input.source.js';
-import { ProgramaThorSource } from './sources/programathor.source.js';
-import type { JobSource } from './sources/job-source.interface.js';
-import { RemotiveSource } from './sources/remotive.source.js';
-import { RemoteOkSource } from './sources/remoteok.source.js';
-import { BrowserMcpEngine } from './sources/browser-mcp/browser-mcp.engine.js';
-import { BrowserMcpTraceWriter } from './sources/browser-mcp/browser-mcp-trace.writer.js';
-import { getSiteAdapters } from './sources/browser-mcp/site-adapters/index.js';
-import type { BrowserMcpTransport } from './sources/browser-mcp/browser-mcp.types.js';
-import { createRealBrowserMcpTransport } from './sources/browser-mcp/browser-mcp-transport.real.js';
-import { FileJobStorage } from './storage/file-job-storage.js';
+import { toSeniorityReportGroupV2 } from './shared/job-taxonomy.util.js';
+import { normalizeJobUrl } from './shared/job.util.js';
 import { deduplicateJobs } from './skills/duplicate-detector.skill.js';
 import { applyJobFilters } from './skills/job-filter.skill.js';
+import { isPrimaryBrazilMarket } from './skills/job-market-classifier.skill.js';
 import { normalizeJob } from './skills/job-normalizer.skill.js';
 import { rankJob } from './skills/job-ranker.skill.js';
-import { isPrimaryBrazilMarket } from './skills/job-market-classifier.skill.js';
 import {
   isPrimaryReportJob,
   isWorldwideRemoteClearlyCompatibleWithBrazil,
 } from './skills/job-selection-policy.skill.js';
-import { normalizeJobUrl } from './shared/job.util.js';
+import { AshbySource } from './sources/ashby.source.js';
+import { BrowserMcpTraceWriter } from './sources/browser-mcp/browser-mcp-trace.writer.js';
+import { createRealBrowserMcpTransport } from './sources/browser-mcp/browser-mcp-transport.real.js';
+import { BrowserMcpEngine } from './sources/browser-mcp/browser-mcp.engine.js';
+import { getSiteAdapters } from './sources/browser-mcp/site-adapters/index.js';
+import { GetOnBoardSource } from './sources/getonboard.source.js';
+import { GreenhouseSource } from './sources/greenhouse.source.js';
+import { GupySource } from './sources/gupy.source.js';
+import { HimalayasSource } from './sources/himalayas.source.js';
+import type { JobSource } from './sources/job-source.interface.js';
+import { LeverSource } from './sources/lever.source.js';
+import { LinkedInSource } from './sources/linkedin.source.js';
+import { ManualJobInputSource } from './sources/manual-job-input.source.js';
+import { ProgramaThorSource } from './sources/programathor.source.js';
+import { RemoteOkSource } from './sources/remoteok.source.js';
+import { RemotiveSource } from './sources/remotive.source.js';
+import { FileJobStorage } from './storage/file-job-storage.js';
 
 const PRIMARY_SENIORITY_TARGET_RATIOS: Array<{
   seniority: SeniorityLevel;
@@ -129,7 +123,12 @@ export class JobResearchAgent {
       bestCounts = counts;
     }
 
-    const { rawJobs, sourceSummaries, rankedJobs: baseRankedJobs, rejectedJobs } = lastAttemptResult!;
+    const {
+      rawJobs,
+      sourceSummaries,
+      rankedJobs: baseRankedJobs,
+      rejectedJobs,
+    } = lastAttemptResult!;
     const recentSelectionHistory = await this.storage.loadRecentSelectionHistory(
       now,
       this.config.dailyVarietyLookbackDays,
@@ -150,7 +149,9 @@ export class JobResearchAgent {
     const urlValidationCache = new Map<string, Promise<boolean>>();
     const selectedJobs = await ensureReportJobsHaveWorkingUrls(
       initiallySelectedJobs,
-      rankedJobs.filter((job) => !initiallySelectedJobs.some((selectedJob) => selectedJob.id === job.id)),
+      rankedJobs.filter(
+        (job) => !initiallySelectedJobs.some((selectedJob) => selectedJob.id === job.id),
+      ),
       this.config.reportTopJobs,
       this.config,
       urlValidationCache,
@@ -173,9 +174,8 @@ export class JobResearchAgent {
       config: this.config,
     });
     const csvReport = this.csvReportGenerator.generate(selectedJobs);
-    const csvReportsBySeniority = this.csvReportGenerator.generateFromSeniorityGroupsV2(
-      seniorityReportGroupsV2,
-    );
+    const csvReportsBySeniority =
+      this.csvReportGenerator.generateFromSeniorityGroupsV2(seniorityReportGroupsV2);
 
     const output = await this.storage.saveRun({
       runId,
@@ -206,7 +206,10 @@ export class JobResearchAgent {
     };
   }
 
-  private async prepareRunData(config: JobResearchConfig, now: Date): Promise<{
+  private async prepareRunData(
+    config: JobResearchConfig,
+    now: Date,
+  ): Promise<{
     rawJobs: RawJobPosting[];
     sourceSummaries: JobSourceSummary[];
     rankedJobs: JobOpportunity[];
@@ -228,11 +231,12 @@ export class JobResearchAgent {
         return;
       }
 
+      const meta = SOURCE_METADATA[source.name];
       sourceSummaries.push({
         source: source.name,
-        label: defaultSourceSummaryLabel(source.name),
-        focus: defaultSourceSummaryFocus(source.name),
-        tier: defaultSourceSummaryTier(source.name),
+        label: meta.label,
+        focus: meta.focus,
+        tier: meta.tier,
         fetchedJobs: 0,
         error: result.reason instanceof Error ? result.reason.message : 'Unknown source error',
       });
@@ -311,7 +315,8 @@ function hasEnoughSeniorityReportJobs(
   >,
 ): boolean {
   return SENIORITY_REPORT_GROUP_V2_ORDER.every((group) => {
-    const target = config.seniorityReportTargetJobsByGroup[group] ?? config.seniorityReportTargetJobs;
+    const target =
+      config.seniorityReportTargetJobsByGroup[group] ?? config.seniorityReportTargetJobs;
     return counts[group] >= target;
   });
 }
@@ -399,9 +404,7 @@ function incrementCount(counts: Record<string, number>, key: string): void {
 }
 
 function sortCountRecord(counts: Record<string, number>): Record<string, number> {
-  return Object.fromEntries(
-    Object.entries(counts).sort((left, right) => right[1] - left[1]),
-  );
+  return Object.fromEntries(Object.entries(counts).sort((left, right) => right[1] - left[1]));
 }
 
 async function ensureReportJobsHaveWorkingUrls(
@@ -427,69 +430,6 @@ async function ensureReportJobsHaveWorkingUrls(
   }
 
   return validatedJobs;
-}
-
-async function buildValidatedSeniorityReportGroups(
-  rankedJobs: JobOpportunity[],
-  config: Pick<
-    JobResearchConfig,
-    'minReportScore' | 'seniorityReportTargetJobs' | 'seniorityReportMinimumJobs' | 'requestTimeoutMs' | 'userAgent'
-  >,
-  urlValidationCache: Map<string, Promise<boolean>>,
-): Promise<CsvSeniorityJobGroups> {
-  const filteredJobs = rankedJobs.filter((job) => job.score >= config.minReportScore);
-
-  const junior = await selectValidJobsForGroup(
-    filteredJobs.filter((job) => getSeniorityReportGroup(job.seniority) === 'junior'),
-    config.seniorityReportTargetJobs,
-    1,
-    config,
-    urlValidationCache,
-  );
-  const midLevel = await selectValidJobsForGroup(
-    filteredJobs.filter((job) => getSeniorityReportGroup(job.seniority) === 'mid_level'),
-    config.seniorityReportTargetJobs,
-    config.seniorityReportMinimumJobs,
-    config,
-    urlValidationCache,
-  );
-  const seniorPlus = await selectValidJobsForGroup(
-    filteredJobs.filter((job) => getSeniorityReportGroup(job.seniority) === 'senior_plus'),
-    config.seniorityReportTargetJobs,
-    config.seniorityReportMinimumJobs,
-    config,
-    urlValidationCache,
-  );
-  const techLead = await selectValidJobsForGroup(
-    filteredJobs.filter((job) => job.roleCategory === 'tech_lead'),
-    config.seniorityReportTargetJobs,
-    1,
-    config,
-    urlValidationCache,
-  );
-  const devops = await selectValidJobsForGroup(
-    filteredJobs.filter((job) => job.roleCategory === 'devops'),
-    config.seniorityReportTargetJobs,
-    1,
-    config,
-    urlValidationCache,
-  );
-  const architect = await selectValidJobsForGroup(
-    filteredJobs.filter((job) => job.seniority === 'architect'),
-    config.seniorityReportTargetJobs,
-    1,
-    config,
-    urlValidationCache,
-  );
-
-  return {
-    junior,
-    midLevel,
-    seniorPlus,
-    techLead,
-    devops,
-    architect,
-  };
 }
 
 /**
@@ -619,13 +559,9 @@ async function hasWorkingReportUrl(
  *
  * Exported to allow override in tests and CLIs (e.g. `--browser-mcp-only`).
  */
-export function createDefaultBrowserMcpEngine(config: JobResearchConfig): BrowserMcpEngine {
-  const transportFactory = (): BrowserMcpTransport => {
-    return createRealBrowserMcpTransport();
-  };
-
+export function createDefaultBrowserMcpEngine(_config: JobResearchConfig): BrowserMcpEngine {
   return new BrowserMcpEngine({
-    transportFactory,
+    transportFactory: createRealBrowserMcpTransport,
     traceWriter: new BrowserMcpTraceWriter(),
     adaptersFactory: getSiteAdapters,
   });
@@ -657,9 +593,10 @@ export function selectReportJobs(
   limit: number,
   minScore: number,
   brazilPrioritySelectionRatio: number,
-) : { selectedJobs: JobResearchRunResult['selectedJobs']; selectionSummary: JobSelectionSummary } {
+): { selectedJobs: JobResearchRunResult['selectedJobs']; selectionSummary: JobSelectionSummary } {
   const aboveThreshold = jobs.filter((job) => job.score >= minScore);
-  const shouldUseThresholdFallback = aboveThreshold.length < limit && jobs.length > aboveThreshold.length;
+  const shouldUseThresholdFallback =
+    aboveThreshold.length < limit && jobs.length > aboveThreshold.length;
   const candidatePool = shouldUseThresholdFallback ? jobs : aboveThreshold;
   const desiredPrimaryJobs = Math.floor(limit * brazilPrioritySelectionRatio);
   const desiredInternationalJobs = limit - desiredPrimaryJobs;
@@ -671,8 +608,7 @@ export function selectReportJobs(
   const selectedRegionalPrimaryIds = new Set(selectedRegionalPrimaryJobs.map((job) => job.id));
   const worldwideCompatiblePrimaryPool = candidatePool.filter(
     (job) =>
-      !selectedRegionalPrimaryIds.has(job.id) &&
-      isWorldwideRemoteClearlyCompatibleWithBrazil(job),
+      !selectedRegionalPrimaryIds.has(job.id) && isWorldwideRemoteClearlyCompatibleWithBrazil(job),
   );
   const selectedWorldwideCompatiblePrimaryJobs = selectJobsWithSourceDiversity(
     worldwideCompatiblePrimaryPool,
@@ -681,8 +617,7 @@ export function selectReportJobs(
   const selectedPrimaryJobs = sortJobsByOriginalOrder(
     [...selectedRegionalPrimaryJobs, ...selectedWorldwideCompatiblePrimaryJobs],
     candidatePool,
-  )
-    .map((job) => assignReportBucket(job, 'primary'));
+  ).map((job) => assignReportBucket(job, 'primary'));
   const selectedPrimaryIds = new Set(selectedPrimaryJobs.map((job) => job.id));
   const fallbackPool = candidatePool.filter(
     (job) => job.jobMarket === 'international' && !selectedPrimaryIds.has(job.id),
@@ -690,8 +625,7 @@ export function selectReportJobs(
   const selectedSecondaryJobs = selectJobsWithSourceDiversity(
     fallbackPool,
     desiredInternationalJobs,
-  )
-    .map((job) => assignReportBucket(job, 'international_fallback'));
+  ).map((job) => assignReportBucket(job, 'international_fallback'));
   const selectedIds = new Set(
     [...selectedPrimaryJobs, ...selectedSecondaryJobs].map((job) => job.id),
   );
@@ -699,17 +633,11 @@ export function selectReportJobs(
   const fillers =
     remainingSlots > 0
       ? selectJobsWithSourceDiversity(
-          prioritizeRemainingJobs(
-            candidatePool.filter((job) => !selectedIds.has(job.id)),
-          ),
+          prioritizeRemainingJobs(candidatePool.filter((job) => !selectedIds.has(job.id))),
           remainingSlots,
+        ).map((job) =>
+          assignReportBucket(job, isPrimaryReportJob(job) ? 'primary' : 'international_fallback'),
         )
-          .map((job) =>
-            assignReportBucket(
-              job,
-              isPrimaryReportJob(job) ? 'primary' : 'international_fallback',
-            ),
-          )
       : [];
   const selectedJobs = sortJobsByOriginalOrder(
     [...selectedPrimaryJobs, ...selectedSecondaryJobs, ...fillers],
@@ -729,8 +657,9 @@ export function selectReportJobs(
       selectedSecondaryJobs: selectedJobs.filter(
         (job) => job.reportBucket === 'international_fallback',
       ).length,
-      selectedWorldwideCompatiblePrimaryJobs: selectedJobs.filter((job) =>
-        job.reportBucket === 'primary' && isWorldwideRemoteClearlyCompatibleWithBrazil(job),
+      selectedWorldwideCompatiblePrimaryJobs: selectedJobs.filter(
+        (job) =>
+          job.reportBucket === 'primary' && isWorldwideRemoteClearlyCompatibleWithBrazil(job),
       ).length,
       filledFromSecondaryBecausePrimaryShortfall: Math.max(
         0,
@@ -741,9 +670,7 @@ export function selectReportJobs(
   };
 }
 
-function buildMarketCounts(
-  jobs: JobResearchRunResult['selectedJobs'],
-): Record<JobMarket, number> {
+function buildMarketCounts(jobs: JobResearchRunResult['selectedJobs']): Record<JobMarket, number> {
   return jobs.reduce<Record<JobMarket, number>>(
     (counts, job) => {
       counts[job.jobMarket] += 1;
@@ -894,9 +821,7 @@ function sortJobsByOriginalOrder(
     .sort((left, right) => (orderById.get(left.id) ?? 0) - (orderById.get(right.id) ?? 0));
 }
 
-function isRegionalBrazilPriorityJob(
-  job: Pick<JobOpportunity, 'jobMarket'>,
-): boolean {
+function isRegionalBrazilPriorityJob(job: Pick<JobOpportunity, 'jobMarket'>): boolean {
   return isPrimaryBrazilMarket(job.jobMarket);
 }
 
@@ -904,106 +829,39 @@ function prioritizeRemainingJobs(
   jobs: JobResearchRunResult['rankedJobs'],
 ): JobResearchRunResult['rankedJobs'] {
   const regionalPrimaryJobs = jobs.filter((job) => isRegionalBrazilPriorityJob(job));
-  const worldwideCompatibleJobs = jobs.filter((job) =>
-    !isRegionalBrazilPriorityJob(job) && isWorldwideRemoteClearlyCompatibleWithBrazil(job),
+  const worldwideCompatibleJobs = jobs.filter(
+    (job) => !isRegionalBrazilPriorityJob(job) && isWorldwideRemoteClearlyCompatibleWithBrazil(job),
   );
   const otherJobs = jobs.filter(
     (job) =>
-      !isRegionalBrazilPriorityJob(job) &&
-      !isWorldwideRemoteClearlyCompatibleWithBrazil(job),
+      !isRegionalBrazilPriorityJob(job) && !isWorldwideRemoteClearlyCompatibleWithBrazil(job),
   );
 
   return [...regionalPrimaryJobs, ...worldwideCompatibleJobs, ...otherJobs];
 }
 
-function defaultSourceSummaryLabel(sourceName: JobSourceSummary['source']): string {
-  switch (sourceName) {
-    case 'manual':
-      return 'Manual intake';
-    case 'programathor':
-      return 'ProgramaThor jobs';
-    case 'linkedin':
-      return 'LinkedIn public jobs search';
-    case 'himalayas':
-      return 'Himalayas Brazil search';
-    case 'getonboard':
-      return 'Get on Board Brazil search';
-    case 'gupy':
-      return 'Gupy Brasil';
-    case 'ashby':
-      return 'Ashby';
-    case 'greenhouse':
-      return 'Greenhouse';
-    case 'lever':
-      return 'Lever';
-    case 'remotive':
-      return 'Remotive';
-    case 'remoteok':
-      return 'RemoteOK';
-    case 'browser_mcp':
-      // Placeholder até a engine real conectar-se no Phase B (task 3.9).
-      return 'Browser MCP';
-  }
-}
-
-function defaultSourceSummaryFocus(sourceName: JobSourceSummary['source']): JobSourceFocus {
-  switch (sourceName) {
-    case 'manual':
-      return 'mixed';
-    case 'programathor':
-      return 'brazil';
-    case 'linkedin':
-      return 'brazil';
-    case 'himalayas':
-    case 'getonboard':
-    case 'gupy':
-      return 'brazil';
-    case 'ashby':
-      return 'global';
-    case 'greenhouse':
-    case 'lever':
-    case 'remotive':
-    case 'remoteok':
-      return 'global';
-    case 'browser_mcp':
-      // Placeholder até a engine real conectar-se no Phase B (task 3.9).
-      return 'mixed';
-  }
-}
-
-function defaultSourceSummaryTier(sourceName: JobSourceSummary['source']): JobSourceTier {
-  switch (sourceName) {
-    case 'manual':
-      return 'manual_curated';
-    case 'programathor':
-      return 'brazil_public_api';
-    case 'linkedin':
-      return 'brazil_public_api';
-    case 'himalayas':
-    case 'getonboard':
-    case 'gupy':
-      return 'brazil_public_api';
-    case 'ashby':
-      return 'direct_company_board';
-    case 'greenhouse':
-    case 'lever':
-      return 'direct_company_board';
-    case 'remotive':
-    case 'remoteok':
-      return 'global_aggregator';
-    case 'browser_mcp':
-      // Placeholder até a engine real conectar-se no Phase B (task 3.9).
-      return 'global_aggregator';
-  }
-}
+const SOURCE_METADATA: Record<
+  JobSourceName,
+  { label: string; focus: JobSourceFocus; tier: JobSourceTier }
+> = {
+  manual: { label: 'Manual intake', focus: 'mixed', tier: 'manual_curated' },
+  programathor: { label: 'ProgramaThor jobs', focus: 'brazil', tier: 'brazil_public_api' },
+  linkedin: { label: 'LinkedIn public jobs search', focus: 'brazil', tier: 'brazil_public_api' },
+  himalayas: { label: 'Himalayas Brazil search', focus: 'brazil', tier: 'brazil_public_api' },
+  getonboard: { label: 'Get on Board Brazil search', focus: 'brazil', tier: 'brazil_public_api' },
+  gupy: { label: 'Gupy Brasil', focus: 'brazil', tier: 'brazil_public_api' },
+  ashby: { label: 'Ashby', focus: 'global', tier: 'direct_company_board' },
+  greenhouse: { label: 'Greenhouse', focus: 'global', tier: 'direct_company_board' },
+  lever: { label: 'Lever', focus: 'global', tier: 'direct_company_board' },
+  remotive: { label: 'Remotive', focus: 'global', tier: 'global_aggregator' },
+  remoteok: { label: 'RemoteOK', focus: 'global', tier: 'global_aggregator' },
+  browser_mcp: { label: 'Browser MCP', focus: 'mixed', tier: 'global_aggregator' },
+};
 
 function buildDailyVarietyContext(
   now: Date,
   recentSelectionHistory: Map<string, number>,
-  config: Pick<
-    JobResearchConfig,
-    'dailyVarietyRepeatPenalty' | 'dailyVarietyScoreBandSize'
-  >,
+  config: Pick<JobResearchConfig, 'dailyVarietyRepeatPenalty' | 'dailyVarietyScoreBandSize'>,
 ): DailyVarietyContext {
   return {
     dayKey: formatLocalDateKey(now),
@@ -1019,9 +877,9 @@ function applyDailyVarietyOrdering(
 ): JobResearchRunResult['rankedJobs'] {
   const originalOrder = new Map(jobs.map((job, index) => [job.id, index]));
 
-  return jobs.slice().sort((left, right) =>
-    compareJobsForDailyVariety(left, right, context, originalOrder),
-  );
+  return jobs
+    .slice()
+    .sort((left, right) => compareJobsForDailyVariety(left, right, context, originalOrder));
 }
 
 function compareJobsForDailyVariety(
@@ -1075,10 +933,7 @@ function getRecentSelectionAge(
   job: JobOpportunity,
   context: DailyVarietyContext,
 ): number | undefined {
-  const keys = [
-    `id:${job.id}`,
-    `url:${normalizeJobUrl(job.url, job.sourceId)}`,
-  ];
+  const keys = [`id:${job.id}`, `url:${normalizeJobUrl(job.url, job.sourceId)}`];
 
   return keys.reduce<number | undefined>((bestAge, key) => {
     const age = context.recentSelectionHistory.get(key);
@@ -1097,10 +952,7 @@ function wasRecentlySelected(
 ): boolean {
   // Only hard-block jobs that were selected on PREVIOUS calendar days (age >= 1).
   // Same-day entries (age = 0) are soft-penalized by daily variety ordering instead.
-  return [
-    `id:${job.id}`,
-    `url:${normalizeJobUrl(job.url, job.sourceId)}`,
-  ].some((key) => {
+  return [`id:${job.id}`, `url:${normalizeJobUrl(job.url, job.sourceId)}`].some((key) => {
     const age = recentSelectionHistory.get(key);
     return age !== undefined && age >= 1;
   });
@@ -1123,10 +975,7 @@ function compareOptionalNumbers(left: number | undefined, right: number | undefi
 }
 
 function getDailyRotationValue(job: JobOpportunity, dayKey: string): number {
-  const hash = createHash('sha1')
-    .update(`${dayKey}::${job.id}`)
-    .digest('hex')
-    .slice(0, 8);
+  const hash = createHash('sha1').update(`${dayKey}::${job.id}`).digest('hex').slice(0, 8);
 
   return Number.parseInt(hash, 16);
 }

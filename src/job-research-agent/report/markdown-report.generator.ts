@@ -1,20 +1,16 @@
 import type { JobResearchConfig } from '../config/job-research.config.js';
-import type {
-  JobOpportunity,
-  JobSelectionSummary,
-  JobSourceSummary,
-} from '../domain/job.types.js';
+import type { JobOpportunity, JobSelectionSummary, JobSourceSummary } from '../domain/job.types.js';
 import { SENIORITY_REPORT_GROUP_V2_ORDER } from '../domain/job.types.js';
 import {
+  ROLE_CATEGORY_ORDER,
+  SENIORITY_ORDER,
+  type SeniorityReportGroup,
   getRoleCategoryLabel,
   getSeniorityLabel,
   getSeniorityReportGroup,
   getSeniorityReportGroupLabel,
   getSeniorityReportGroupV2Label,
-  ROLE_CATEGORY_ORDER,
-  SENIORITY_ORDER,
   toSeniorityReportGroupV2,
-  type SeniorityReportGroup,
 } from '../shared/job-taxonomy.util.js';
 import { isWorldwideRemoteClearlyCompatibleWithBrazil } from '../skills/job-selection-policy.skill.js';
 
@@ -33,7 +29,9 @@ export class MarkdownReportGenerator {
   generate(input: MarkdownReportInput): string {
     const selectedJobs = input.selectedJobs.slice(0, input.config.reportTopJobs);
     const primaryJobs = selectedJobs.filter((job) => job.reportBucket === 'primary');
-    const fallbackJobs = selectedJobs.filter((job) => job.reportBucket === 'international_fallback');
+    const fallbackJobs = selectedJobs.filter(
+      (job) => job.reportBucket === 'international_fallback',
+    );
     const seniorityReportJobs = selectedJobs.filter((job) => job.score >= 50);
     const lines: string[] = [
       '# Job Research Report',
@@ -150,7 +148,7 @@ function buildRoleCategoryOverviewRows(
   });
 }
 
-function buildGroupedOpportunitySections(
+function _buildGroupedOpportunitySections(
   jobs: JobOpportunity[],
   startRank: number,
   includePrimaryReason: boolean,
@@ -177,13 +175,17 @@ function buildGroupedOpportunitySections(
       lines.push(`#### ${getSeniorityLabel(seniority)}`, '');
 
       if (includePrimaryReason) {
-        lines.push('| Rank | Score | Primary Reason | Market | Company | Title | Location | Source |');
+        lines.push(
+          '| Rank | Score | Primary Reason | Market | Company | Title | Location | Source |',
+        );
         lines.push('| ---: | ---: | --- | --- | --- | --- | --- | --- |');
         lines.push(...jobsForSeniority.map((job, index) => buildPrimaryRow(job, nextRank + index)));
       } else {
         lines.push('| Rank | Score | Market | Company | Title | Location | Source |');
         lines.push('| ---: | ---: | --- | --- | --- | --- | --- |');
-        lines.push(...jobsForSeniority.map((job, index) => buildFallbackRow(job, nextRank + index)));
+        lines.push(
+          ...jobsForSeniority.map((job, index) => buildFallbackRow(job, nextRank + index)),
+        );
       }
 
       lines.push('');
@@ -208,7 +210,9 @@ function buildSeniorityReportSections(jobs: JobOpportunity[]): string[] {
       continue;
     }
 
-    lines.push('| Rank | Score | Bucket | Primary Reason | Market | Company | Title | Location | Source |');
+    lines.push(
+      '| Rank | Score | Bucket | Primary Reason | Market | Company | Title | Location | Source |',
+    );
     lines.push('| ---: | ---: | --- | --- | --- | --- | --- | --- | --- |');
     lines.push(...jobsForGroup.map((job, index) => buildSeniorityReportRow(job, index + 1)));
     lines.push('');
@@ -292,9 +296,7 @@ function buildReportV2Row(job: JobOpportunity, rank: number): string {
 // relatório. `disabled` quando não há nenhum summary com source="browser_mcp"
 // (ver Requirement 14.4). Caso contrário, imprime `enabled (siteId=N, ...)`.
 function buildBrowserMcpStatusLine(sourceSummaries: JobSourceSummary[]): string {
-  const browserMcpSummaries = sourceSummaries.filter(
-    (summary) => summary.source === 'browser_mcp',
-  );
+  const browserMcpSummaries = sourceSummaries.filter((summary) => summary.source === 'browser_mcp');
 
   if (browserMcpSummaries.length === 0) {
     return 'Browser MCP: disabled';
