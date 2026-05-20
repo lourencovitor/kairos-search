@@ -1,9 +1,18 @@
-import type { AnalysisDto, AtsJobDto, CandidateProfile } from './types.js';
+import type { AnalysisDto, AtsJobDto, CandidateProfile, UserDto } from './types.js';
 
-/** Vite injeta em build; em dev local, fallback para API ATS no Docker/pnpm. */
-const API_BASE =
-  (import.meta.env.VITE_ATS_API_URL as string | undefined)?.trim() ||
-  (import.meta.env.DEV ? 'http://localhost:4000' : '');
+export interface RegisterInput {
+  readonly name: string;
+  readonly email: string;
+  readonly technologies: readonly string[];
+}
+
+/**
+ * Dev: sempre same-origin (:3355) + proxy Vite → ATS (:4000) para cookies de sessão.
+ * Produção: VITE_ATS_API_URL no build (ex. https://kairos-ats.onrender.com).
+ */
+const API_BASE = import.meta.env.DEV
+  ? ''
+  : ((import.meta.env.VITE_ATS_API_URL as string | undefined)?.trim() ?? '');
 
 export class AtsApiError extends Error {
   constructor(
@@ -24,15 +33,16 @@ async function parseJson<T>(response: Response): Promise<T> {
 }
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  if (!API_BASE) {
+  if (!API_BASE && !import.meta.env.DEV) {
     throw new AtsApiError(
       0,
       'VITE_ATS_API_URL não configurada. Crie .env (cp .env.example) e rode pnpm build:client de novo.',
     );
   }
+  const url = API_BASE ? `${API_BASE}${path}` : path;
   let response: Response;
   try {
-    response = await fetch(`${API_BASE}${path}`, {
+    response = await fetch(url, {
       credentials: 'include',
       ...init,
       headers: {
@@ -43,7 +53,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   } catch (err) {
     const hint =
       err instanceof TypeError
-        ? ` Não foi possível contactar a API ATS em ${API_BASE} (CORS, API parada ou imagem Docker desatualizada — rode: docker compose build api && docker compose up -d api).`
+        ? ` Não foi possível contactar a API ATS${API_BASE ? ` em ${API_BASE}` : ''} (API parada, proxy /v1 ou imagem Docker desatualizada).`
         : '';
     throw new AtsApiError(0, (err instanceof Error ? err.message : 'Erro de rede') + hint);
   }
@@ -63,9 +73,24 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const atsApi = {
+  register(input: RegisterInput): Promise<{ data: { sent: true } }> {
+    return request('/v1/auth/register', {
+      method: 'POST',
+      body: JSON.stringify(input),
+    });
+  },
+
+  getMe(): Promise<{ data: UserDto }> {
+    return request('/v1/auth/me');
+  },
+
+  logout(): Promise<{ data: { ok: true } }> {
+    return request('/v1/auth/logout', { method: 'POST', body: '{}' });
+  },
+
   async checkSession(): Promise<boolean> {
     try {
-      await request('/v1/jobs?limit=1');
+      await request('/v1/auth/me');
       return true;
     } catch (err) {
       if (err instanceof AtsApiError && err.status === 401) {
@@ -100,10 +125,22 @@ export const atsApi = {
     return request('/v1/cv', { method: 'POST', body: form });
   },
 
-  createAnalysis(jobId: string, profile: CandidateProfile): Promise<{ data: AnalysisDto }> {
+  createAnalysis(
+    jobId: string,
+    profile: CandidateProfile,
+    jobDescriptionText?: string,
+  ): Promise<{ data: AnalysisDto }> {
+    const body: { jobId: string; profile: CandidateProfile; jobDescriptionText?: string } = {
+      jobId,
+      profile,
+    };
+    const desc = jobDescriptionText?.trim();
+    if (desc) {
+      body.jobDescriptionText = desc;
+    }
     return request('/v1/analyses', {
       method: 'POST',
-      body: JSON.stringify({ jobId, profile }),
+      body: JSON.stringify(body),
     });
   },
 

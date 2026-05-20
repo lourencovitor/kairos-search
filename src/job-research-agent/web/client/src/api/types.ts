@@ -23,6 +23,8 @@ export interface JobOpportunity {
   roleCategory: string;
   remotePolicy: string;
   stackSignals: string[];
+  /** Texto completo do anúncio (quando disponível no JSON do job-research). */
+  descriptionText?: string;
   score: number;
   salaryText?: string;
   publishedAt?: string;

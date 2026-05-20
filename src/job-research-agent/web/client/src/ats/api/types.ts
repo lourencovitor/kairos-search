@@ -1,3 +1,11 @@
+export interface UserDto {
+  readonly id: string;
+  readonly email: string;
+  readonly name: string | null;
+  readonly strongTechnologies: readonly string[];
+  readonly profileComplete: boolean;
+}
+
 export interface CandidateProfile {
   readonly skills: readonly { readonly name: string }[];
   readonly seniorityHint: string;

@@ -1,6 +1,7 @@
 import { Box, Divider, Stack, Typography, alpha } from '@mui/material';
 
 import type { ApplyVerdict } from '../api/types.js';
+import { InlineMarkdown } from './InlineMarkdown.js';
 
 interface VerdictTheme {
   readonly accent: string;
@@ -89,7 +90,9 @@ export function ApplyVerdictBanner(props: {
           {t.subtitle}
         </Typography>
         <Divider sx={{ borderColor: alpha(t.accent, 0.2) }} />
-        <Typography variant="body2">{props.reason}</Typography>
+        <InlineMarkdown sx={{ display: 'block', fontSize: '0.88rem', lineHeight: 1.6 }}>
+          {props.reason}
+        </InlineMarkdown>
       </Stack>
     </Box>
   );

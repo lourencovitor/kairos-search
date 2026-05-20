@@ -267,27 +267,66 @@ export const JobCard = memo(function JobCard({ job, isDark, onAnalyze }: JobCard
               {rightMeta}
             </Typography>
             {ATS_ANALYSIS_ENABLED && onAnalyze && (
-              <Button
-                size="small"
-                variant="outlined"
-                color="primary"
-                startIcon={<AnalyticsOutlinedIcon sx={{ fontSize: 14 }} />}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onAnalyze(job);
-                }}
-                sx={{
-                  mt: 0.5,
-                  fontSize: '0.68rem',
-                  py: 0.35,
-                  px: 1,
-                  minWidth: 0,
-                  borderColor: isDark ? 'rgba(45,212,191,0.35)' : undefined,
-                }}
+              <Tooltip
+                arrow
+                placement="left"
+                title={
+                  <Box sx={{ p: 0.25, maxWidth: 220 }}>
+                    <Typography
+                      sx={{ fontWeight: 700, fontSize: '0.74rem', display: 'block', mb: 0.5 }}
+                    >
+                      Análise ATS desta vaga
+                    </Typography>
+                    <Typography
+                      sx={{
+                        fontSize: '0.67rem',
+                        color: 'rgba(255,255,255,0.7)',
+                        lineHeight: 1.55,
+                        display: 'block',
+                      }}
+                    >
+                      Score 0–100, breakdown por skill, gaps e plano de ação para seu CV.
+                    </Typography>
+                  </Box>
+                }
               >
-                Analisar CV
-              </Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  startIcon={<AnalyticsOutlinedIcon sx={{ fontSize: 14 }} />}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onAnalyze(job);
+                  }}
+                  sx={{
+                    mt: 0.6,
+                    fontSize: '0.7rem',
+                    fontWeight: 700,
+                    letterSpacing: '-0.005em',
+                    py: 0.55,
+                    px: 1.3,
+                    minWidth: 0,
+                    color: '#FFFFFF',
+                    background: 'linear-gradient(135deg, #1A2E4A 0%, #3D7EBF 100%)',
+                    boxShadow: isDark
+                      ? '0 4px 14px rgba(61,126,191,0.35), 0 0 0 1px rgba(127,181,232,0.15) inset'
+                      : '0 4px 14px rgba(26,46,74,0.28), 0 0 0 1px rgba(255,255,255,0.12) inset',
+                    border: 'none',
+                    transition: 'all 0.22s cubic-bezier(0.16, 1, 0.3, 1)',
+                    '&:hover': {
+                      background: 'linear-gradient(135deg, #243F65 0%, #4A8FD0 100%)',
+                      boxShadow: isDark
+                        ? '0 6px 20px rgba(61,126,191,0.5), 0 0 0 1px rgba(127,181,232,0.25) inset'
+                        : '0 6px 20px rgba(26,46,74,0.38), 0 0 0 1px rgba(255,255,255,0.18) inset',
+                      transform: 'translateY(-1px)',
+                    },
+                    '& .MuiButton-startIcon': { mr: 0.6 },
+                  }}
+                >
+                  Analisar CV
+                </Button>
+              </Tooltip>
             )}
           </Stack>
         </Stack>

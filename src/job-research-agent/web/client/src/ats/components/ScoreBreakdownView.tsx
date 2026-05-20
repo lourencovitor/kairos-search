@@ -2,6 +2,7 @@ import { Box, LinearProgress, Stack, Typography } from '@mui/material';
 
 import type { MatcherBreakdown } from '../api/types.js';
 import { MATCHER_LABELS, SENIORITY_LABELS } from '../labels.js';
+import { InlineMarkdown } from './InlineMarkdown.js';
 
 function formatMatcherDetails(m: MatcherBreakdown): string[] {
   const d = m.details;
@@ -97,14 +98,18 @@ export function ScoreBreakdownView({ matchers }: { matchers: readonly MatcherBre
               }}
             />
             {detailLines.map((line) => (
-              <Typography
+              <InlineMarkdown
                 key={line}
-                variant="caption"
-                color="text.secondary"
-                sx={{ display: 'block', mt: 0.5 }}
+                sx={{
+                  display: 'block',
+                  fontSize: '0.75rem',
+                  lineHeight: 1.55,
+                  color: 'text.secondary',
+                  mt: 0.5,
+                }}
               >
                 {line}
-              </Typography>
+              </InlineMarkdown>
             ))}
           </Box>
         );
