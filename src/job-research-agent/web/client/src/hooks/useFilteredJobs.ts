@@ -6,10 +6,10 @@ import { reportGroup } from '../utils/report-group.js';
 
 export interface FilterState {
   query: string;
-  group: string;
-  market: string;
+  groups: string[];
+  marketFilter: string[];
   score: number;
-  remoteOnly: boolean;
+  remotePolicies: string[];
 }
 
 export function useFilteredJobs(jobs: JobOpportunity[], filters: FilterState) {
@@ -25,13 +25,27 @@ export function useFilteredJobs(jobs: JobOpportunity[], filters: FilterState) {
         .toLowerCase();
       return (
         (!q || hay.includes(q)) &&
-        (!filters.group || reportGroup(job) === filters.group) &&
-        (!filters.market || job.jobMarket === filters.market) &&
+        (!filters.groups.length || filters.groups.includes(reportGroup(job))) &&
+        (!filters.marketFilter.length ||
+          filters.marketFilter.some((m) =>
+            m === 'brazil'
+              ? job.jobMarket === 'brazil' || job.jobMarket === 'brazil_friendly'
+              : job.jobMarket === m,
+          )) &&
         job.score >= filters.score &&
-        (!filters.remoteOnly || job.remotePolicy === 'remote')
+        (!filters.remotePolicies.length ||
+          filters.remotePolicies.length >= 3 ||
+          filters.remotePolicies.includes(job.remotePolicy))
       );
     });
-  }, [deferredQuery, filters.group, filters.market, jobs, filters.remoteOnly, filters.score]);
+  }, [
+    deferredQuery,
+    filters.groups,
+    filters.marketFilter,
+    jobs,
+    filters.remotePolicies,
+    filters.score,
+  ]);
 
   return { filteredJobs, markets };
 }

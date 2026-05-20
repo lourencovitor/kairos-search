@@ -1,3 +1,5 @@
+import { memo } from 'react';
+
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Box, Card, CardContent, Link, Stack, Tooltip, Typography } from '@mui/material';
 
@@ -20,7 +22,7 @@ interface JobCardProps {
   isDark: boolean;
 }
 
-export function JobCard({ job, isDark }: JobCardProps) {
+export const JobCard = memo(function JobCard({ job, isDark }: JobCardProps) {
   const grp = reportGroup(job);
   const c = GROUP_COLORS[grp];
   const src = job.sourceBoard ?? job.source;
@@ -266,4 +268,4 @@ export function JobCard({ job, isDark }: JobCardProps) {
       </CardContent>
     </Card>
   );
-}
+});

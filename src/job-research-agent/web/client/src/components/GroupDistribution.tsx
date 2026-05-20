@@ -8,8 +8,8 @@ interface GroupDistributionProps {
   totalJobs: number;
   groupCounts: Map<ReportGroup, number>;
   filteredCount: number;
-  group: string;
-  onGroupChange: (g: string) => void;
+  groups: string[];
+  onGroupToggle: (g: string) => void;
   isDark: boolean;
   filtersOpen: boolean;
   onFiltersToggle: () => void;
@@ -20,8 +20,8 @@ export function GroupDistribution({
   totalJobs,
   groupCounts,
   filteredCount,
-  group,
-  onGroupChange,
+  groups,
+  onGroupToggle,
   isDark,
   filtersOpen,
   onFiltersToggle,
@@ -43,11 +43,11 @@ export function GroupDistribution({
           {GROUP_ORDER.filter((g) => (groupCounts.get(g) ?? 0) > 0).map((g) => {
             const count = groupCounts.get(g) ?? 0;
             const pct = (count / totalJobs) * 100;
-            const isActive = group === g;
+            const isActive = groups.includes(g);
             return (
               <Tooltip key={g} title={`${GROUP_LABELS[g]} · ${count} vagas`} placement="top" arrow>
                 <Box
-                  onClick={() => onGroupChange(group === g ? '' : g)}
+                  onClick={() => onGroupToggle(g)}
                   sx={{
                     height: '100%',
                     width: `${pct}%`,
@@ -55,7 +55,7 @@ export function GroupDistribution({
                     bgcolor: GROUP_COLORS[g].accent,
                     borderRadius: '2px',
                     cursor: 'pointer',
-                    opacity: group && !isActive ? 0.15 : 1,
+                    opacity: groups.length > 0 && !isActive ? 0.15 : 1,
                     transition: 'opacity 0.2s, transform 0.15s',
                     '&:hover': { opacity: 1, transform: 'scaleY(1.7)' },
                   }}
@@ -65,15 +65,16 @@ export function GroupDistribution({
           })}
         </Box>
       )}
+
       <Stack direction="row" sx={{ alignItems: 'center', gap: 0.6, flexWrap: 'wrap' }}>
         {GROUP_ORDER.map((g) => {
           const count = groupCounts.get(g) ?? 0;
           const c = GROUP_COLORS[g];
-          const active = group === g;
+          const active = groups.includes(g);
           return (
             <Box
               key={g}
-              onClick={() => onGroupChange(group === g ? '' : g)}
+              onClick={() => onGroupToggle(g)}
               sx={{
                 display: 'inline-flex',
                 alignItems: 'center',
@@ -121,6 +122,7 @@ export function GroupDistribution({
             </Box>
           );
         })}
+
         <Box sx={{ flexGrow: 1 }} />
         <Typography
           variant="caption"

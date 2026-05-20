@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState, useTransition } from 'react';
 
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -29,6 +29,7 @@ import type { ReportGroup } from './api/types.js';
 import { FiltersPanel } from './components/FiltersPanel.js';
 import { GroupDistribution } from './components/GroupDistribution.js';
 import { JobCard } from './components/JobCard.js';
+import { ScrollToTopButton } from './components/ScrollToTopButton.js';
 import { SkeletonCard } from './components/SkeletonCard.js';
 import { FeedAdPlaceholder } from './components/ads/FeedAdPlaceholder.js';
 import { LeaderboardAdBanner } from './components/ads/LeaderboardAdBanner.js';
@@ -55,28 +56,52 @@ export default function App({
   const isDark = mode === 'dark';
 
   const { payload, loading, status, error, loadLatest } = useLatestPayload();
+  const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState('');
-  const [group, setGroup] = useState('');
-  const [market, setMarket] = useState('');
+  const [groups, setGroups] = useState<string[]>([]);
+  const [marketFilter, setMarketFilter] = useState<string[]>([]);
   const [score, setScore] = useState(0);
-  const [remoteOnly, setRemoteOnly] = useState(false);
-  const [listVersion, setListVersion] = useState(0);
+  const [remotePolicies, setRemotePolicies] = useState<string[]>([]);
+
+  const toggleGroup = (g: string) =>
+    startTransition(() =>
+      setGroups((prev) => (prev.includes(g) ? prev.filter((x) => x !== g) : [...prev, g])),
+    );
+
+  const toggleMarket = (m: string) =>
+    startTransition(() =>
+      setMarketFilter((prev) => (prev.includes(m) ? prev.filter((x) => x !== m) : [...prev, m])),
+    );
+
+  const toggleRemotePolicy = (p: string) =>
+    startTransition(() =>
+      setRemotePolicies((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p])),
+    );
+
+  const handleScoreChange = (v: number) => startTransition(() => setScore(v));
+
+  const clearAllFilters = () =>
+    startTransition(() => {
+      setQuery('');
+      setGroups([]);
+      setMarketFilter([]);
+      setScore(0);
+      setRemotePolicies([]);
+    });
+
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [errorDismissed, setErrorDismissed] = useState(false);
 
-  useEffect(() => {
-    setListVersion((v) => v + 1);
-  }, [group, market, remoteOnly]);
   useEffect(() => {
     setErrorDismissed(false);
   }, [error]);
 
   const { filteredJobs, markets } = useFilteredJobs(payload.jobs, {
     query,
-    group,
-    market,
+    groups,
+    marketFilter,
     score,
-    remoteOnly,
+    remotePolicies,
   });
 
   const groupCounts = useMemo(() => {
@@ -90,9 +115,12 @@ export default function App({
 
   const totalJobs = payload.jobs.length;
   const showSkeleton = loading && totalJobs === 0;
-  const activeFilterCount = [group !== '', market !== '', remoteOnly, score > 0].filter(
-    Boolean,
-  ).length;
+  const activeFilterCount = [
+    groups.length > 0,
+    marketFilter.length > 0,
+    remotePolicies.length > 0,
+    score > 0,
+  ].filter(Boolean).length;
 
   const topStats = [
     { label: 'Coletadas', value: payload.summary?.totalRawJobs ?? 0 },
@@ -199,12 +227,14 @@ export default function App({
         </Toolbar>
       </AppBar>
 
-      {loading && (
+      {(loading || isPending) && (
         <LinearProgress
           sx={{
             bgcolor: 'transparent',
             '& .MuiLinearProgress-bar': {
-              background: 'linear-gradient(90deg, #1A2E4A, #3D7EBF, #1A2E4A)',
+              background: isPending
+                ? 'linear-gradient(90deg, #2B5072, #3D7EBF, #2B5072)'
+                : 'linear-gradient(90deg, #1A2E4A, #3D7EBF, #1A2E4A)',
               backgroundSize: '200% 100%',
               animation: 'linearProgressShimmer 1.8s ease infinite',
             },
@@ -319,8 +349,8 @@ export default function App({
                     totalJobs={totalJobs}
                     groupCounts={groupCounts}
                     filteredCount={filteredJobs.length}
-                    group={group}
-                    onGroupChange={setGroup}
+                    groups={groups}
+                    onGroupToggle={toggleGroup}
                     isDark={isDark}
                     filtersOpen={filtersOpen}
                     onFiltersToggle={() => setFiltersOpen((v) => !v)}
@@ -328,6 +358,26 @@ export default function App({
                   />
                 </CardContent>
               </Card>
+
+              <Collapse in={filtersOpen} sx={{ display: { lg: 'none' } }}>
+                <Card sx={{ overflow: 'hidden' }}>
+                  <Box sx={{ p: 2.5 }}>
+                    <FiltersPanel
+                      query={query}
+                      onQueryChange={setQuery}
+                      markets={markets}
+                      marketFilter={marketFilter}
+                      onMarketToggle={toggleMarket}
+                      score={score}
+                      onScoreChange={handleScoreChange}
+                      remotePolicies={remotePolicies}
+                      onRemotePolicyToggle={toggleRemotePolicy}
+                      isDark={isDark}
+                      onClearAll={clearAllFilters}
+                    />
+                  </Box>
+                </Card>
+              </Collapse>
 
               {showSkeleton && (
                 <Stack spacing={2}>
@@ -350,24 +400,39 @@ export default function App({
                 </Card>
               )}
 
-              {!showSkeleton &&
-                filteredJobs.length > 0 &&
-                filteredJobs.slice(0, 250).map((job, idx) => (
-                  <Fragment key={`${listVersion}-${job.id}`}>
-                    {idx > 0 && idx % 5 === 0 && (
-                      <FeedAdPlaceholder isDark={isDark} adIndex={idx} />
-                    )}
-                    <Box
-                      sx={{
-                        opacity: 0,
-                        animation: 'kairosIn 0.4s ease forwards',
-                        animationDelay: `${Math.min(idx * 22, 400)}ms`,
-                      }}
-                    >
-                      <JobCard job={job} isDark={isDark} />
-                    </Box>
-                  </Fragment>
-                ))}
+              {!showSkeleton && filteredJobs.length > 0 && (
+                <Box
+                  sx={{
+                    opacity: isPending ? 0.4 : 1,
+                    transition: 'opacity 0.2s ease',
+                    pointerEvents: isPending ? 'none' : 'auto',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 2,
+                  }}
+                >
+                  {filteredJobs.slice(0, 250).map((job, idx) => (
+                    <Fragment key={job.id}>
+                      {idx > 0 && idx % 5 === 0 && (
+                        <FeedAdPlaceholder isDark={isDark} adIndex={idx} />
+                      )}
+                      <Box
+                        sx={
+                          idx < 10
+                            ? {
+                                opacity: 0,
+                                animation: 'kairosIn 0.3s ease forwards',
+                                animationDelay: `${idx * 30}ms`,
+                              }
+                            : undefined
+                        }
+                      >
+                        <JobCard job={job} isDark={isDark} />
+                      </Box>
+                    </Fragment>
+                  ))}
+                </Box>
+              )}
             </Stack>
           </Grid>
 
@@ -375,24 +440,6 @@ export default function App({
           <Grid size={{ xs: 12, lg: 3 }} sx={{ order: { xs: 2, lg: 3 } }}>
             <Stack spacing={2} sx={{ position: { lg: 'sticky' }, top: 72 }}>
               <Box>
-                <Collapse in={filtersOpen} sx={{ display: { lg: 'none' } }}>
-                  <Card sx={{ overflow: 'hidden', mb: 2 }}>
-                    <Box sx={{ p: 2.5 }}>
-                      <FiltersPanel
-                        query={query}
-                        onQueryChange={setQuery}
-                        market={market}
-                        markets={markets}
-                        onMarketChange={setMarket}
-                        score={score}
-                        onScoreChange={setScore}
-                        remoteOnly={remoteOnly}
-                        onRemoteOnlyToggle={() => setRemoteOnly((v) => !v)}
-                      />
-                    </Box>
-                  </Card>
-                </Collapse>
-
                 <Card sx={{ overflow: 'hidden', display: { xs: 'none', lg: 'block' } }}>
                   <Box
                     sx={{
@@ -419,13 +466,15 @@ export default function App({
                     <FiltersPanel
                       query={query}
                       onQueryChange={setQuery}
-                      market={market}
                       markets={markets}
-                      onMarketChange={setMarket}
+                      marketFilter={marketFilter}
+                      onMarketToggle={toggleMarket}
                       score={score}
-                      onScoreChange={setScore}
-                      remoteOnly={remoteOnly}
-                      onRemoteOnlyToggle={() => setRemoteOnly((v) => !v)}
+                      onScoreChange={handleScoreChange}
+                      remotePolicies={remotePolicies}
+                      onRemotePolicyToggle={toggleRemotePolicy}
+                      isDark={isDark}
+                      onClearAll={clearAllFilters}
                     />
                   </Box>
                 </Card>
@@ -494,6 +543,8 @@ export default function App({
           </Grid>
         </Grid>
       </Container>
+
+      <ScrollToTopButton />
     </Box>
   );
 }
