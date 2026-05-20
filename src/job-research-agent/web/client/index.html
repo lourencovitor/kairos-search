@@ -3,6 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1A2E4A" />
+    <meta name="robots" content="index, follow" />
+    <meta
+      name="description"
+      content="Kairos: vagas tech no Brasil curadas diariamente. Score de fit por regras de ATS, breakdown por skill e plano de ação para passar pelo filtro automático antes de aplicar."
+    />
+    <meta name="author" content="Kairos" />
+    <link rel="canonical" href="https://kairos-search.onrender.com/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Kairos" />
+    <meta property="og:title" content="Kairos · Oportunidades tech curadas com score ATS" />
+    <meta
+      property="og:description"
+      content="Plataforma de carreira em tech: vagas curadas diariamente no Brasil, score de fit determinístico contra as regras de ATS e plano de ação por vaga."
+    />
+    <meta property="og:url" content="https://kairos-search.onrender.com/" />
+    <meta property="og:locale" content="pt_BR" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Kairos · Oportunidades tech curadas com score ATS" />
+    <meta
+      name="twitter:description"
+      content="Vagas tech BR curadas + score de fit por regras de ATS + plano de ação por vaga."
+    />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -10,12 +38,208 @@
       rel="icon"
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231A2E4A'/%3E%3Ccircle cx='32' cy='32' r='17' fill='none' stroke='white' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='8' fill='none' stroke='%233D7EBF' stroke-width='3'/%3E%3Ccircle cx='32' cy='32' r='2.5' fill='white'/%3E%3Cline x1='32' y1='9' x2='32' y2='19' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='32' y1='45' x2='32' y2='55' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='9' y1='32' x2='19' y2='32' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3Cline x1='45' y1='32' x2='55' y2='32' stroke='white' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E"
     />
-    <title>Kairos · Oportunidades Tech</title>
+    <title>Kairos · Oportunidades Tech curadas com score ATS</title>
+
+    <!-- Schema.org / JSON-LD -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "Kairos",
+        "alternateName": "Kairos Search",
+        "url": "https://kairos-search.onrender.com/",
+        "inLanguage": "pt-BR",
+        "description": "Plataforma de carreira em tech: vagas curadas diariamente no Brasil, score de fit por regras de ATS e plano de ação por vaga.",
+        "publisher": {
+          "@type": "Organization",
+          "name": "Kairos",
+          "url": "https://kairos-search.onrender.com/"
+        }
+      }
+    </script>
+
     <!-- Google AdSense -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9297079486621607" crossorigin="anonymous"></script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <noscript>
+      <style>
+        body {
+          margin: 0;
+          font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+          color: #0F1F2E;
+          background: #F8FAFC;
+          line-height: 1.55;
+        }
+        .ns-shell {
+          max-width: 880px;
+          margin: 0 auto;
+          padding: 56px 24px 80px;
+        }
+        .ns-brand {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-bottom: 40px;
+        }
+        .ns-logo {
+          width: 44px;
+          height: 44px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #3D7EBF, #1A2E4A);
+          display: inline-block;
+        }
+        .ns-brand h1 {
+          margin: 0;
+          font-size: 1.5rem;
+          font-weight: 800;
+          letter-spacing: -0.025em;
+          color: #1A2E4A;
+        }
+        .ns-brand p {
+          margin: 4px 0 0;
+          font-size: 0.72rem;
+          font-weight: 700;
+          letter-spacing: 0.18em;
+          text-transform: uppercase;
+          color: #5A7A96;
+        }
+        .ns-hero {
+          font-size: 2.25rem;
+          font-weight: 800;
+          letter-spacing: -0.03em;
+          line-height: 1.1;
+          margin: 0 0 16px;
+          color: #0F1F2E;
+          max-width: 720px;
+        }
+        .ns-lead {
+          font-size: 1.05rem;
+          color: #5A7A96;
+          max-width: 640px;
+          margin: 0 0 40px;
+        }
+        .ns-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+          gap: 16px;
+          margin-bottom: 40px;
+        }
+        .ns-card {
+          background: #FFFFFF;
+          border: 1px solid rgba(15, 31, 46, 0.08);
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow: 0 1px 3px rgba(15, 31, 46, 0.04);
+        }
+        .ns-card h3 {
+          margin: 0 0 8px;
+          font-size: 1rem;
+          font-weight: 800;
+          letter-spacing: -0.015em;
+          color: #1A2E4A;
+        }
+        .ns-card p {
+          margin: 0;
+          font-size: 0.88rem;
+          color: #5A7A96;
+        }
+        .ns-section {
+          margin-bottom: 32px;
+        }
+        .ns-section h2 {
+          margin: 0 0 12px;
+          font-size: 1.25rem;
+          font-weight: 800;
+          color: #1A2E4A;
+          letter-spacing: -0.02em;
+        }
+        .ns-list {
+          padding-left: 1.2em;
+          margin: 0;
+          color: #475569;
+          font-size: 0.92rem;
+        }
+        .ns-list li {
+          margin-bottom: 8px;
+        }
+        .ns-footer {
+          margin-top: 48px;
+          padding-top: 24px;
+          border-top: 1px solid rgba(15, 31, 46, 0.08);
+          font-size: 0.82rem;
+          color: #5A7A96;
+        }
+        .ns-footer strong {
+          color: #1A2E4A;
+        }
+      </style>
+      <main class="ns-shell">
+        <header class="ns-brand">
+          <span class="ns-logo" aria-hidden="true"></span>
+          <div>
+            <h1>Kairos</h1>
+            <p>Plataforma de carreira em tech</p>
+          </div>
+        </header>
+
+        <h2 class="ns-hero">O momento certo de aplicar, com dados em vez de sorte.</h2>
+        <p class="ns-lead">
+          A Kairos centraliza vagas tech no Brasil, ranqueia por relevância e compara seu currículo
+          com as mesmas regras que sistemas de triagem (ATS) usam antes do recrutador abrir o arquivo.
+        </p>
+
+        <div class="ns-grid">
+          <div class="ns-card">
+            <h3>Curadoria diária</h3>
+            <p>
+              Vagas de engenharia de software, dados, mobile, QA, arquitetura e DevOps coletadas
+              em fontes oficiais no Brasil.
+            </p>
+          </div>
+          <div class="ns-card">
+            <h3>Score ATS 0–100</h3>
+            <p>
+              Nota determinística por skills, senioridade, experiência, idioma e região, com
+              breakdown e evidências do CV.
+            </p>
+          </div>
+          <div class="ns-card">
+            <h3>Plano por vaga</h3>
+            <p>
+              Veredito (aplicar, aplicar com ressalvas ou não aplicar) e passo a passo editável
+              para reduzir risco de descarte automático.
+            </p>
+          </div>
+        </div>
+
+        <section class="ns-section">
+          <h2>Para quem é</h2>
+          <ul class="ns-list">
+            <li>Engenheiras e engenheiros de software buscando vagas tech remotas ou no Brasil.</li>
+            <li>Pessoas de dados, mobile, QA, arquitetura e DevOps que querem priorizar candidaturas.</li>
+            <li>Quem cansou de aplicar no escuro e quer ver o ranking de fit antes de gastar tempo.</li>
+          </ul>
+        </section>
+
+        <section class="ns-section">
+          <h2>Como funciona</h2>
+          <ul class="ns-list">
+            <li>Vagas são coletadas, normalizadas e ranqueadas diariamente.</li>
+            <li>Você envia seu CV (PDF ou DOCX) — processado em memória, sem armazenamento.</li>
+            <li>O Kairos compara CV vs vaga e devolve score, gaps e sugestões editáveis.</li>
+          </ul>
+        </section>
+
+        <footer class="ns-footer">
+          <p>
+            <strong>JavaScript desabilitado.</strong> Habilite-o no seu navegador para acessar
+            o app completo da Kairos: filtros, abertura de vagas e análise ATS do seu CV.
+          </p>
+        </footer>
+      </main>
+    </noscript>
   </body>
 </html>

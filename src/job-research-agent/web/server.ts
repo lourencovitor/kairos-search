@@ -105,6 +105,8 @@ if (isProd) {
   });
 
   const repoRoot = process.cwd();
+  const atsApiTarget = (process.env.VITE_ATS_API_URL ?? 'http://127.0.0.1:4000').replace(/\/$/, '');
+
   const viteServer = await createViteServer({
     root: clientDir,
     envDir: repoRoot,
@@ -113,7 +115,10 @@ if (isProd) {
       host: '127.0.0.1',
       port,
       strictPort: true,
-      proxy: { '/api': `http://127.0.0.1:${apiPort}` },
+      proxy: {
+        '/api': `http://127.0.0.1:${apiPort}`,
+        '/v1': { target: atsApiTarget, changeOrigin: true },
+      },
     },
   });
   await viteServer.listen();
