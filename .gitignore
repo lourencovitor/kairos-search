@@ -26,6 +26,7 @@ data/manual-inputs/*.json
 
 # Build outputs (nested — root dist/ is committed intentionally)
 src/job-research-agent/web/client/dist/
+dist/job-research-agent/
 
 # Editor
 .vscode

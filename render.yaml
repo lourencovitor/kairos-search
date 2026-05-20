@@ -3,7 +3,7 @@ services:
     name: kairos
     runtime: node
     plan: free
-    buildCommand: pnpm install --prod
+    buildCommand: pnpm install --frozen-lockfile && pnpm run build && pnpm run build:prod
     startCommand: NODE_ENV=production node_modules/.bin/tsx src/job-research-agent/web/server.ts
     envVars:
       - key: NODE_ENV

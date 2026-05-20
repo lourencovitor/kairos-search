@@ -1,0 +1,1 @@
+export const REQUIRED_STRONG_TECH_COUNT = 5;
