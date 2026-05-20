@@ -1,6 +1,9 @@
 import type { AnalysisDto, AtsJobDto, CandidateProfile } from './types.js';
 
-const API_BASE = import.meta.env.VITE_ATS_API_URL ?? '';
+/** Vite injeta em build; em dev local, fallback para API ATS no Docker/pnpm. */
+const API_BASE =
+  (import.meta.env.VITE_ATS_API_URL as string | undefined)?.trim() ||
+  (import.meta.env.DEV ? 'http://localhost:4000' : '');
 
 export class AtsApiError extends Error {
   constructor(
@@ -22,7 +25,10 @@ async function parseJson<T>(response: Response): Promise<T> {
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   if (!API_BASE) {
-    throw new AtsApiError(0, 'VITE_ATS_API_URL não configurada');
+    throw new AtsApiError(
+      0,
+      'VITE_ATS_API_URL não configurada. Crie .env (cp .env.example) e rode pnpm build:client de novo.',
+    );
   }
   const response = await fetch(`${API_BASE}${path}`, {
     credentials: 'include',

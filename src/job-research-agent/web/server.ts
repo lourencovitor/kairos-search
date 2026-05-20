@@ -104,8 +104,10 @@ if (isProd) {
     apiServer.listen(apiPort, '127.0.0.1', resolve);
   });
 
+  const repoRoot = process.cwd();
   const viteServer = await createViteServer({
     root: clientDir,
+    envDir: repoRoot,
     plugins: [react()],
     server: {
       host: '127.0.0.1',

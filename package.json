@@ -19,7 +19,9 @@
     "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"test-fixtures/**/*.ts\"",
     "job-research": "tsx src/job-research-agent/cli/run-job-research.ts",
     "job-web": "tsx src/job-research-agent/web/server.ts",
+    "dev:web": "vite",
     "start": "tsx src/job-research-agent/web/server.ts",
+    "start:prod": "NODE_ENV=production tsx src/job-research-agent/web/server.ts",
     "test": "vitest --run",
     "prepare": "husky"
   },
