@@ -1,0 +1,21 @@
+# https://kairos-search.onrender.com/
+
+User-agent: *
+Allow: /
+
+# Google crawler para indexação web
+User-agent: Googlebot
+Allow: /
+
+# Google AdSense — sniffing de conteúdo para servir anúncios relevantes
+User-agent: Mediapartners-Google
+Allow: /
+
+# Google AdsBot — preview de páginas de destino de anúncios
+User-agent: AdsBot-Google
+Allow: /
+
+User-agent: AdsBot-Google-Mobile
+Allow: /
+
+Sitemap: https://kairos-search.onrender.com/sitemap.xml
