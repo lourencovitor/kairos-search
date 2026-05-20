@@ -40,4 +40,24 @@ export default [
       'max-lines': ['warn', { max: 400, skipBlankLines: true, skipComments: true }],
     },
   },
+  // Orquestrador principal — complexidade inerente ao coordenar 12 fontes + pipeline completo
+  {
+    files: ['src/job-research-agent/index.ts'],
+    rules: { 'max-lines': ['warn', { max: 900, skipBlankLines: true, skipComments: true }] },
+  },
+  // Arquivo de configuração central — cresce naturalmente com cada nova fonte/site
+  {
+    files: ['src/job-research-agent/config/job-research.config.ts'],
+    rules: { 'max-lines': ['warn', { max: 700, skipBlankLines: true, skipComments: true }] },
+  },
+  // React SPA root — concentra estado global, layout e múltiplos providers
+  {
+    files: ['src/job-research-agent/web/client/src/App.tsx'],
+    rules: { 'max-lines': ['warn', { max: 600, skipBlankLines: true, skipComments: true }] },
+  },
+  // Suítes de teste — longas por design para cobrir todos os casos do pipeline
+  {
+    files: ['**/*.test.ts', '**/*.test.tsx'],
+    rules: { 'max-lines': ['warn', { max: 900, skipBlankLines: true, skipComments: true }] },
+  },
 ];

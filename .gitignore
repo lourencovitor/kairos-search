@@ -9,6 +9,7 @@ data/manual-inputs/*.json
 !data/manual-inputs/*.example.json
 
 # Local env & secrets
+.env
 .env.local
 .env*.local
 
@@ -22,6 +23,9 @@ data/manual-inputs/*.json
 
 # macOS
 .DS_Store
+
+# Build outputs (nested — root dist/ is committed intentionally)
+src/job-research-agent/web/client/dist/
 
 # Editor
 .vscode

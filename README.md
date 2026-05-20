@@ -3,6 +3,7 @@
 [![CI](https://github.com/lourencovitor/kairos-search/actions/workflows/ci.yml/badge.svg)](https://github.com/lourencovitor/kairos-search/actions/workflows/ci.yml)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 Pipeline de coleta, ranking e apresentação de vagas de software engineering com foco Brasil-first.
 
@@ -255,4 +256,6 @@ O projeto está configurado para Render.com via `render.yaml`. Veja [`docs/OPERA
 
 ## Licença
 
-Uso privado. Sem licença open source definida.
+MIT © [Vitor Lourenco](https://github.com/lourencovitor) — veja [LICENSE](LICENSE) para detalhes.
+
+Para reportar vulnerabilidades de segurança, veja [SECURITY.md](SECURITY.md).
