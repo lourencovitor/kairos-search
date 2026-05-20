@@ -1,334 +1,252 @@
-# Job Research Agent MVP
+# Kairos
 
-This repository contains a practical MVP for a `Job Research Agent` focused on finding strong software engineering opportunities across multiple seniority levels for candidates based in Brazil/LATAM.
+Pipeline de coleta, ranking e apresentação de vagas de software engineering com foco Brasil-first.
 
-## What it does
+Agrega vagas de 12+ fontes (APIs públicas, boards de ATS, agregadores globais e Browser MCP opcional), normaliza, filtra, ranqueia com heurísticas Brasil-first e entrega via web UI filtrada ou relatórios CSV/Markdown.
 
-- Pulls jobs from safe public sources instead of aggressive scraping.
-- Prioritizes Brazil-first sources before global fallback sources.
-- Supports direct company boards via `Greenhouse` and `Lever`.
-- Supports Brazil/LATAM public APIs via `Himalayas` and `Get on Board`.
-- Supports remote aggregators via `Remotive` and `RemoteOK`.
-- Normalizes job data into a shared model.
-- Filters for relevant engineering roles from Junior through Architect.
-- Scores and ranks opportunities with Brazil-first heuristics.
-- Deduplicates overlapping listings across sources.
-- Generates Markdown and CSV reports with grouped seniority and role-category views.
-- Supports manual intake files for high-priority platforms like `LinkedIn`, `Indeed`, and `Wellfound` without scraping them directly.
+## Funcionalidades
 
-## Current prioritization strategy
+- Coleta de vagas de 12 fontes em paralelo (APIs Brasil, ATS diretos, agregadores globais)
+- Normalização para modelo unificado com detecção automática de remote policy, mercado, stack e senioridade
+- Ranking com score 0–100+ baseado em: título, senioridade, mercado, localização Brasil, stack técnico, recência e qualidade da fonte
+- Deduplicação entre fontes (mantém maior score)
+- Seleção Brasil-first: 92% vagas Brasil/LATAM + 8% fallback internacional
+- Relatórios em Markdown e CSV agrupados por 8 grupos de senioridade/categoria
+- Web UI React com filtros por grupo, mercado, modalidade e relevância mínima
+- REST API com autenticação por bearer token
+- Download de relatórios em ZIP
+- Browser MCP como fonte opcional para sites com sessão autenticada
 
-The current strategy is Brazil-first:
+## Stack
 
-- The final report tries to allocate `80%` of slots to `Brazil`, `Brazil-friendly`, or `LATAM` jobs.
-- The remaining `20%` can be filled with international jobs.
-- If there are not enough strong Brazil-priority jobs in the current source mix, the report fills the shortfall with the best international jobs and states that in the summary.
-- The default report size is now `Top 100` selected opportunities.
+| Camada | Tecnologia |
+|---|---|
+| Runtime | Node.js ≥ 20, TypeScript 5.8 |
+| Web Server | Node.js `http` nativo + Vite (dev) |
+| Frontend | React 19 + MUI 9 + Vite 8 |
+| Testes | Vitest 3 + fast-check |
+| Browser automation | Playwright + MCP SDK (opcional) |
+| Deploy | Render.com (free tier) |
+| CI | GitHub Actions (Node 20 + 22) |
 
-Each ranked job is classified into one of these markets:
+## Pré-requisitos
 
-- `brazil`
-- `brazil_friendly`
-- `latam`
-- `international`
-- `unclear`
-
-## Sources used in the MVP
-
-- Manual JSON intake under `data/manual-inputs/`
-- `Himalayas` public jobs API with Brazil-targeted searches
-- `Get on Board` public jobs API with Brazil-targeted searches
-- `Greenhouse` public job board API
-- `Lever` public postings API
-- `Remotive` public jobs API
-- `RemoteOK` public API
-- Manual curated intake for `LinkedIn`, `Indeed`, and `Wellfound`
-
-The source mix is intentionally split into tiers:
-
-- `manual_curated` for first-class human-curated jobs
-- `brazil_public_api` for Brazil/LATAM-friendly APIs
-- `direct_company_board` for public ATS boards
-- `global_aggregator` as fallback inventory
-
-## Quick start
+- Node.js >= 20.0.0
+- pnpm >= 10
 
 ```bash
+node --version   # deve ser >= 20.0.0
+pnpm --version   # deve ser >= 10.0.0
+```
+
+## Instalação
+
+```bash
+git clone <repo>
+cd job-search-engine
 pnpm install
+```
+
+## Configuração
+
+Copie o arquivo de exemplo e edite conforme necessário:
+
+```bash
+cp .env.example .env
+```
+
+As variáveis essenciais para rodar localmente:
+
+```env
+PORT=3355
+API_PORT=3356
+NODE_ENV=development
+KAIROS_LOCAL_ONLY=true   # bind apenas em 127.0.0.1 localmente
+```
+
+Para deploy em produção, veja [`docs/SETUP.md`](docs/SETUP.md) e [`docs/OPERATIONS.md`](docs/OPERATIONS.md).
+
+## Como rodar
+
+### Web UI + API (modo principal)
+
+```bash
+pnpm job-web
+```
+
+Acesse `http://localhost:3355`. Em desenvolvimento, o Vite dev server sobe automaticamente na porta `API_PORT` (3356 por padrão) e o frontend conecta nele.
+
+### Pipeline CLI (coleta de vagas)
+
+```bash
 pnpm job-research
 ```
 
-Generated outputs are written to:
+Gera relatórios em `data/job-research/runs/<timestamp>/` e atualiza `data/job-research/latest/`.
 
-- `data/job-research/runs/<timestamp>/`
-- `data/job-research/latest/`
+Flags disponíveis:
 
-The generated report artifacts include:
+| Flag | Descrição |
+|---|---|
+| `--top=N` | Número de vagas no relatório (default: 100) |
+| `--min-score=N` | Score mínimo para inclusão (default: 0) |
+| `--output-dir=<path>` | Diretório de saída alternativo |
+| `--manual-input-dir=<path>` | Diretório de inputs manuais alternativo |
+| `--browser-mcp` | Força Browser MCP habilitado |
+| `--no-browser-mcp` | Força Browser MCP desabilitado |
+| `--browser-mcp-only` | Roda apenas o Browser MCP (desabilita fontes HTTP) |
+| `--browser-mcp-site=<id>` | Habilita apenas o site especificado (repetível) |
 
-- `report.md` for team sharing, grouped by seniority and role category
-- `report.csv` for Google Sheets import
-- `summary.json` with source counts and selection-mix metadata
+### Build para produção
 
-## Manual curated intake
-
-Scraping for `LinkedIn`, `Indeed`, and `Wellfound` is intentionally not implemented.
-
-If you want to include curated jobs from `LinkedIn`, `Indeed`, `Wellfound`, email alerts, recruiter messages, or manually reviewed company pages, copy one of these example files and add structured entries:
-
-- `data/manual-inputs/brazil-jobs.example.json`
-- `data/manual-inputs/linkedin-jobs.example.json`
-- `data/manual-inputs/indeed-jobs.example.json`
-- `data/manual-inputs/wellfound-jobs.example.json`
-
-The agent will read any `.json` file in `data/manual-inputs/` except files ending in `.example.json`.
-
-The manual format supports file-level `defaults` plus per-job overrides for:
-
-- `source`, `sourceFocus`, `sourceTier`, `sourceQualityRank`
-- `marketHint`, `remotePolicyHint`
-- `regionHints`, `restrictionHints`
-- `notes`, `tags`, and arbitrary `metadata`
-
-This makes manual Brazil curation first-class instead of a generic fallback.
-
-The default ranking now also gives explicit preference to these platforms:
-
-- `LinkedIn`
-- `Indeed`
-- `Wellfound`
-- `RemoteOK`
-
-## Brazil-first sourcing configuration
-
-The default configuration now includes Brazil-targeted search queries for:
-
-- `Himalayas` via `config.himalayas`
-- `Get on Board` via `config.getOnBoard`
-
-Those sections let you tune:
-
-- `enabled`
-- `searchQueries`
-- `maxPagesPerQuery`
-- `country` or `countryCode`
-- `lang` and `perPage` for `Get on Board`
-
-## Default targets
-
-The default configuration prioritizes these role families:
-
-- Junior Software Engineer
-- Mid-level Software Engineer
-- Software Engineer
-- Senior Software Engineer
-- Staff Software Engineer
-- Principal Software Engineer
-- Tech Lead
-- Software Architect
-- Solutions Architect
-- Cloud Architect
-
-It also prefers:
-
-- Remote-compatible roles
-- Brazil/LATAM or worldwide eligibility
-- Jobs discovered on `LinkedIn`, `Indeed`, `Wellfound`, and `RemoteOK`
-- Brazil-first public APIs and manual curated entries
-- Direct company board sources
-- Recent postings
-- Strong matches for `AWS`, `Terraform`, `JavaScript`, `TypeScript`, `NestJS`, `React`, `Postgres`, `Redis`, `Microservices`, and `Micro frontends`
-- A Top 100 shortlist with the international fallback still capped by the Brazil-first ratio
-
-## Project structure
-
-```txt
-src/
-  job-research-agent/
-    index.ts
-    domain/
-    sources/
-    skills/
-    report/
-    config/
-    storage/
-    cli/
+```bash
+pnpm build:client   # build do frontend React
+pnpm build          # typecheck do backend
 ```
 
-## Notes
+## Testes
 
-- This MVP is intentionally file-based and does not use a database.
-- Seed Greenhouse and Lever boards are configurable in `src/job-research-agent/config/job-research.config.ts`.
-- The Brazil-first shortlist ratio is configurable via `brazilPrioritySelectionRatio` in `src/job-research-agent/config/job-research.config.ts`.
-- Brazil-targeted API source settings live in `himalayas` and `getOnBoard` in `src/job-research-agent/config/job-research.config.ts`.
-- The CLI supports `--top=`, `--min-score=`, `--output-dir=`, and `--manual-input-dir=`.
-- Reports are designed to be readable first and easy to ingest later, with grouping by seniority and role category.
-
-## Browser MCP Engine
-
-The **Browser MCP Engine** is an opt-in complementary job source that uses the [browsermcp.io](https://browsermcp.io/) MCP server to drive your local browser (with already-authenticated sessions) and collect job postings from sites where direct HTTP scraping is fragile, blocked, or against Terms of Service.
-
-It does **not** replace the existing HTTP/API pipeline — it is an additional source that feeds into the same normalize → filter → rank → dedup → select → report pipeline.
-
-### Enabling
-
-The engine is **disabled by default**. To enable it:
-
-1. Set `browserMcp.enabled = true` in `src/job-research-agent/config/job-research.config.ts`.
-2. Enable individual sites via `browserMcp.sites.<id>.enabled = true`.
-
-Both conditions must be true for a site to be scraped. This double opt-in ensures the pipeline continues working exactly as before without any new external dependencies.
-
-### CLI Flags
-
-| Flag | Effect |
-| --- | --- |
-| `--browser-mcp` | Forces `browserMcp.enabled = true` for this run |
-| `--no-browser-mcp` | Forces `browserMcp.enabled = false` for this run |
-| `--browser-mcp-only` | Disables all HTTP sources, runs only the Browser MCP Engine |
-| `--browser-mcp-site=<id>` | Enables only the specified site adapter(s); repeatable |
-
-Passing `--browser-mcp` and `--no-browser-mcp` together is an error (exit code 1).
-
-### Supported Sites (9)
-
-| Site ID | Focus | Description |
-| --- | --- | --- |
-| `linkedin` | Global | LinkedIn Jobs (authenticated session) |
-| `programathor` | Brazil | ProgramaThor job board |
-| `glassdoor` | Global | Glassdoor job listings |
-| `vagas_com` | Brazil | Vagas.com.br |
-| `catho` | Brazil | Catho |
-| `infojobs_br` | Brazil | InfoJobs Brasil |
-| `gupy_public` | Brazil | Gupy public job pages |
-| `trampos_co` | Brazil | Trampos.co |
-| `revelo` | Brazil | Revelo |
-
-Each site adapter can be configured independently with `searchQueries`, `maxPagesPerQuery`, `rateLimitMs`, `maxJobs`, and `location`.
-
-### Security Guarantees
-
-- **No auto-apply**: The engine never clicks "Apply", "Candidatar-se", or any write-action button on any site. A selector blacklist enforces this at the client level.
-- **No credential storage**: The engine does not read, store, or request login credentials. It relies entirely on the user's already-authenticated browser session via the Browser MCP bridge.
-- **No data leak**: No repository code, history, or local files outside `data/job-research/` are sent to external endpoints. Communication is limited to the Browser MCP Server and the navigated sites.
-- **Rate limiting**: Each site respects a configurable `rateLimitMs` (default 4000ms) between navigations, plus a global page budget (`globalMaxPages`, default 60).
-- **Trace redaction**: Sensitive tokens (`jwt`, `access_token`, `csrf-token`) are redacted from URLs before being persisted in the trace file.
-
-## Seniority Report Groups V2
-
-The report pipeline groups jobs into **7 seniority/category groups** for CSV output and the Markdown report. Each job is assigned to exactly one group.
-
-### Groups
-
-| Group | Label | CSV File |
-| --- | --- | --- |
-| `junior` | Junior | `report-junior.csv` |
-| `pleno` | Pleno | `report-pleno.csv` |
-| `senior` | Senior | `report-senior.csv` |
-| `staff` | Staff | `report-staff.csv` |
-| `arq` | Arq | `report-arq.csv` |
-| `qa` | QA | `report-qa.csv` |
-| `devops` | DevOps | `report-devops.csv` |
-
-### Precedence Order
-
-The classification function `toSeniorityReportGroupV2` applies rules in this precedence:
-
-```text
-devops → arq → qa → junior → pleno → senior → staff
+```bash
+pnpm test           # executa todos os testes
+pnpm typecheck      # valida tipos TypeScript
+pnpm lint           # ESLint
+pnpm format:check   # Prettier
 ```
 
-This means:
+## Estrutura de pastas
 
-- A "Junior DevOps Engineer" goes into `devops` (not `junior`), because `devops` has higher precedence.
-- A "Senior Solutions Architect" goes into `arq` (not `senior`).
-- A "QA Engineer" goes into `qa` regardless of seniority level.
-- Jobs with `seniority = "unknown"` and no matching role category fall into an internal `other` bucket (not exported as CSV).
+```
+src/job-research-agent/
+├── index.ts                  # Orquestrador principal do pipeline
+├── config/                   # Configuração central (fontes, scoring, targets)
+├── domain/                   # Tipos de domínio (JobOpportunity, JobMarket, etc.)
+├── sources/                  # 12 adaptadores de fontes
+│   └── browser-mcp/          # Browser MCP engine + 10 adaptadores de sites
+├── skills/                   # Pipeline de transformação
+│   ├── job-normalizer.skill.ts
+│   ├── job-filter.skill.ts
+│   ├── job-ranker.skill.ts
+│   ├── duplicate-detector.skill.ts
+│   └── job-selection-policy.skill.ts
+├── report/                   # Geradores de relatório (Markdown, CSV)
+├── storage/                  # Persistência em disco
+├── shared/                   # Utilities (taxonomia, localização, HTTP)
+├── cli/                      # Entry point CLI
+└── web/                      # Servidor HTTP, API REST e frontend React
+    ├── server.ts
+    ├── app.ts
+    ├── routes/
+    ├── services/
+    ├── middleware/
+    └── client/               # SPA React (Vite)
 
-### Mapping Rules
-
-| Condition | Group |
-| --- | --- |
-| `roleCategory === "devops"` | `devops` |
-| `roleCategory ∈ {software_architecture, solutions_architecture, cloud_architecture}` OR `seniority === "architect"` | `arq` |
-| `roleCategory === "qa"` | `qa` |
-| `seniority === "junior"` | `junior` |
-| `seniority === "mid_level"` | `pleno` |
-| `seniority === "senior"` OR `seniority === "lead"` | `senior` |
-| `seniority ∈ {staff, principal, staff_or_principal}` | `staff` |
-| None of the above | `other` |
-
-Each group targets up to 50 jobs (configurable via `seniorityReportTargetJobs` or per-group via `seniorityReportTargetJobsByGroup`).
-
-## Browser MCP Trace Format
-
-When the Browser MCP Engine runs (`browserMcp.enabled = true`), it writes a trace file at:
-
-```text
-data/job-research/runs/<timestamp>/browser-mcp-trace.json
+data/
+├── job-research/
+│   ├── runs/<timestamp>/     # Outputs de cada run
+│   └── latest/               # Symlinks para o run mais recente
+└── manual-inputs/            # JSONs de vagas curadas manualmente
 ```
 
-This file provides observability into what the engine did during the run. All sensitive tokens in URLs are redacted before writing.
+## Fontes de vagas
 
-### Example (redacted)
+| Fonte | Tipo | Foco |
+|---|---|---|
+| Manual JSON (`data/manual-inputs/`) | Curado | Qualquer |
+| ProgramaThor | API pública | Brasil |
+| LinkedIn | API pública | Brasil/Global |
+| Himalayas | API pública | Brasil |
+| Get on Board | API pública | Brasil/LATAM |
+| Gupy | API pública | Brasil |
+| Greenhouse | ATS direto | Global |
+| Lever | ATS direto | Global |
+| Ashby | ATS direto | Global |
+| Remotive | Agregador | Global (remote) |
+| RemoteOK | Agregador | Global (remote) |
+| Browser MCP | Browser autenticado | Variado (opt-in) |
 
-```json
-{
-  "generatedAt": "2026-05-10T18:42:11.003Z",
-  "config": {
-    "enabled": true,
-    "parallelSites": false,
-    "globalMaxPages": 60
-  },
-  "sites": [
-    {
-      "siteId": "linkedin",
-      "queriesExecuted": 13,
-      "pagesVisited": 3,
-      "jobsExtracted": 42,
-      "droppedJobs": 2,
-      "durationMs": 118000,
-      "errors": [],
-      "warnings": []
-    },
-    {
-      "siteId": "programathor",
-      "queriesExecuted": 2,
-      "pagesVisited": 5,
-      "jobsExtracted": 28,
-      "droppedJobs": 0,
-      "durationMs": 45000,
-      "errors": [],
-      "warnings": []
-    },
-    {
-      "siteId": "glassdoor",
-      "queriesExecuted": 0,
-      "pagesVisited": 1,
-      "jobsExtracted": 0,
-      "droppedJobs": 0,
-      "durationMs": 3200,
-      "errors": ["requires_manual_login"],
-      "warnings": []
-    }
-  ]
-}
+### Tiers de fonte
+
+| Tier | Qualidade | Fontes |
+|---|---|---|
+| `manual_curated` | 10 | Manual JSON |
+| `brazil_public_api` | 6 | ProgramaThor, LinkedIn, Himalayas, Get on Board, Gupy |
+| `direct_company_board` | 8 | Greenhouse, Lever, Ashby |
+| `global_aggregator` | 3 | Remotive, RemoteOK, Browser MCP |
+
+## Estratégia Brasil-first
+
+O pipeline seleciona o Top N vagas com a seguinte alocação:
+
+- **92%** de vagas com `jobMarket ∈ {brazil, brazil_friendly, latam}`
+- **8%** de fallback para vagas internacionais (remote worldwide)
+
+Dentro do pool Brasil-first, a distribuição por senioridade é:
+
+| Grupo | Alvo |
+|---|---|
+| Junior | 5% |
+| Pleno | 20% |
+| Senior | 25% |
+| Lead/Tech Lead | 15% |
+| Staff | 10% |
+| Principal | 10% |
+| Arquitetura | 15% |
+
+A fonte máxima por fornecedor é limitada a 30% para garantir diversidade.
+
+## Grupos de relatório
+
+Cada vaga é classificada em exatamente um grupo. Precedência: `devops → arq → qa → junior → pleno → senior → staff → management`.
+
+| Grupo | CSV | Condição |
+|---|---|---|
+| `devops` | `report-devops.csv` | `roleCategory === "devops"` |
+| `arq` | `report-arq.csv` | Arquitetura de software/soluções/cloud ou `seniority === "architect"` |
+| `qa` | `report-qa.csv` | `roleCategory === "qa"` |
+| `junior` | `report-junior.csv` | `seniority === "junior"` |
+| `pleno` | `report-pleno.csv` | `seniority === "mid_level"` |
+| `senior` | `report-senior.csv` | `seniority ∈ {senior, lead}` |
+| `staff` | `report-staff.csv` | `seniority ∈ {staff, principal, staff_or_principal}` |
+| `management` | `report-management.csv` | `roleCategory === "management"` |
+
+## Intake manual
+
+Scraping de LinkedIn, Indeed e Wellfound é intencionalmente não implementado. Use os arquivos de exemplo para curar vagas manualmente:
+
+```bash
+# Copie um dos templates
+cp data/manual-inputs/linkedin-jobs.example.json data/manual-inputs/linkedin-jobs.json
+
+# Edite e adicione vagas
+# O pipeline lê qualquer *.json em data/manual-inputs/ (exceto *.example.json)
 ```
 
-### Fields
+## Browser MCP (opcional)
 
-| Field | Description |
-| --- | --- |
-| `generatedAt` | ISO 8601 timestamp of when the trace was written |
-| `config.enabled` | Whether the engine was enabled |
-| `config.parallelSites` | Whether parallel site execution was active |
-| `config.globalMaxPages` | Global page budget for the run |
-| `sites[].siteId` | Identifier of the site adapter |
-| `sites[].queriesExecuted` | Number of search queries run on this site |
-| `sites[].pagesVisited` | Number of pages navigated |
-| `sites[].jobsExtracted` | Number of valid jobs extracted |
-| `sites[].droppedJobs` | Jobs discarded (missing required fields) |
-| `sites[].durationMs` | Total time spent on this site in milliseconds |
-| `sites[].errors` | Error codes (e.g. `requires_manual_login`, `rate_limited_or_captcha`, `skipped_global_limit`) |
-| `sites[].warnings` | Warnings (e.g. `extraction_zero_results` when layout may have changed) |
+Engine complementar que usa o [browsermcp.io](https://browsermcp.io/) para navegar com sessão autenticada. **Desabilitado por default.**
 
-The trace file is **not written** when `browserMcp.enabled = false` (the `browserMcpTracePath` output is `null`).
+Para habilitar: `src/job-research-agent/config/job-research.config.ts` → `browserMcp.enabled = true`.
+
+Sites suportados: LinkedIn, ProgramaThor, Glassdoor, Vagas.com, Catho, InfoJobs BR, Gupy public, Trampos.co, Revelo, GeekHunter.
+
+Garantias: sem auto-apply, sem leitura de credenciais, rate limiting configurável por site, tokens sensíveis redactados do trace file.
+
+## Deploy
+
+O projeto está configurado para Render.com via `render.yaml`. Veja [`docs/OPERATIONS.md`](docs/OPERATIONS.md) para instruções completas.
+
+## Documentação
+
+| Documento | Conteúdo |
+|---|---|
+| [`docs/SETUP.md`](docs/SETUP.md) | Instalação e configuração detalhada |
+| [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) | Arquitetura, módulos e fluxo de dados |
+| [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md) | Convenções, como adicionar fontes e skills |
+| [`docs/API.md`](docs/API.md) | Endpoints REST, autenticação e payloads |
+| [`docs/OPERATIONS.md`](docs/OPERATIONS.md) | Deploy, logs e operação |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Como contribuir |
+| [`CHANGELOG.md`](CHANGELOG.md) | Histórico de mudanças |
+
+## Licença
+
+Uso privado. Sem licença open source definida.
