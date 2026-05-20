@@ -5,6 +5,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { Box, Button, Card, CardContent, Link, Stack, Tooltip, Typography } from '@mui/material';
 
 import type { JobOpportunity } from '../api/types.js';
+import { ATS_ANALYSIS_ENABLED } from '../ats/featureFlags.js';
 import { scoreColors, scoreRangeLabel } from '../utils/color-theme.js';
 import {
   formatSalary,
@@ -265,7 +266,7 @@ export const JobCard = memo(function JobCard({ job, isDark, onAnalyze }: JobCard
             >
               {rightMeta}
             </Typography>
-            {onAnalyze && (
+            {ATS_ANALYSIS_ENABLED && onAnalyze && (
               <Button
                 size="small"
                 variant="outlined"
