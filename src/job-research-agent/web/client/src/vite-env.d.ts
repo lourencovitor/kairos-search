@@ -7,6 +7,8 @@ interface ImportMetaEnv {
   readonly VITE_AD_SLOT_FEED?: string;
   readonly VITE_AD_SLOT_SIDEBAR_TOP?: string;
   readonly VITE_AD_SLOT_SIDEBAR_BOT?: string;
+  readonly VITE_FEATURE_ATS_ANALYSIS?: string;
+  readonly VITE_FEATURE_AUTH?: string;
 }
 
 interface ImportMeta {

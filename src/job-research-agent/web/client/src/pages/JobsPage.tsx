@@ -30,6 +30,7 @@ import type { JobOpportunity, ReportGroup } from '../api/types.js';
 import { useAuth } from '../ats/auth/AuthContext.js';
 import { AtsAnalysisModal } from '../ats/components/AtsAnalysisModal.js';
 import { ProfileMenu } from '../ats/components/ProfileMenu.js';
+import { AUTH_ENABLED } from '../ats/featureFlags.js';
 import { FiltersPanel } from '../components/FiltersPanel.js';
 import { GroupDistribution } from '../components/GroupDistribution.js';
 import { JobCard } from '../components/JobCard.js';
@@ -227,13 +228,15 @@ export function JobsPage({
             <Box sx={{ display: { xs: 'none', sm: 'block' } }}>Atualizar</Box>
           </Button>
 
-          <ProfileMenu
-            user={user}
-            isDark={isDark}
-            onLogout={() => {
-              void logout().then(() => navigate('/login'));
-            }}
-          />
+          {AUTH_ENABLED && (
+            <ProfileMenu
+              user={user}
+              isDark={isDark}
+              onLogout={() => {
+                void logout().then(() => navigate('/login'));
+              }}
+            />
+          )}
         </Toolbar>
       </AppBar>
 

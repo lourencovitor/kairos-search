@@ -10,6 +10,7 @@ import {
 
 import { AtsApiError, atsApi } from '../api/client.js';
 import type { UserDto } from '../api/types.js';
+import { AUTH_ENABLED } from '../featureFlags.js';
 
 interface AuthContextValue {
   readonly isAuthenticated: boolean;
@@ -23,10 +24,11 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserDto | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(!AUTH_ENABLED);
+  const [isLoading, setIsLoading] = useState(AUTH_ENABLED);
 
   const refresh = useCallback(async () => {
+    if (!AUTH_ENABLED) return;
     setIsLoading(true);
     try {
       const { data } = await atsApi.getMe();
@@ -46,6 +48,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
+    if (!AUTH_ENABLED) return;
     try {
       await atsApi.logout();
     } finally {
@@ -55,6 +58,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (!AUTH_ENABLED) return;
     void refresh();
   }, [refresh]);
 

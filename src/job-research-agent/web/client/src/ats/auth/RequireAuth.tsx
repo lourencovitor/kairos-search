@@ -2,9 +2,10 @@ import { Navigate, useLocation } from 'react-router-dom';
 
 import { Box, CircularProgress } from '@mui/material';
 
+import { AUTH_ENABLED } from '../featureFlags.js';
 import { useAuth } from './AuthContext.js';
 
-export function RequireAuth({ children }: { children: React.ReactNode }) {
+function RequireAuthGate({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
@@ -24,4 +25,9 @@ export function RequireAuth({ children }: { children: React.ReactNode }) {
   }
 
   return children;
+}
+
+export function RequireAuth({ children }: { children: React.ReactNode }) {
+  if (!AUTH_ENABLED) return <>{children}</>;
+  return <RequireAuthGate>{children}</RequireAuthGate>;
 }

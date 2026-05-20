@@ -11,3 +11,7 @@ function isFlagOn(value: string | undefined): boolean {
 
 export const ATS_ANALYSIS_ENABLED: boolean =
   import.meta.env.DEV || isFlagOn(import.meta.env.VITE_FEATURE_ATS_ANALYSIS as string | undefined);
+
+/** Login, cadastro, RequireAuth na home e menu de perfil. */
+export const AUTH_ENABLED: boolean =
+  import.meta.env.DEV || isFlagOn(import.meta.env.VITE_FEATURE_AUTH as string | undefined);
