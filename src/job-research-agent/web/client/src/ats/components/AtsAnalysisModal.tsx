@@ -67,12 +67,17 @@ export function AtsAnalysisModal(props: {
       setProfile(stored);
       setPhase(loggedIn ? (stored ? 'cv' : 'cv') : 'auth');
     } catch (err) {
-      const msg =
-        err instanceof AtsApiError && err.status === 404
-          ? 'Esta vaga ainda não está no índice ATS. Rode a ingestão no Kairos ATS (worker-search) e tente de novo.'
-          : err instanceof Error
-            ? err.message
-            : 'Não foi possível preparar a análise';
+      let msg = 'Não foi possível preparar a análise';
+      if (err instanceof AtsApiError) {
+        if (err.status === 404) {
+          msg =
+            'Esta vaga ainda não está no índice ATS. No repo kairos-ats rode: ./scripts/sync-job-research-top5.sh 20 (com API em :4000 e worker-search ativo).';
+        } else {
+          msg = err.message;
+        }
+      } else if (err instanceof Error) {
+        msg = err.message;
+      }
       setError(msg);
       setPhase('error');
     }

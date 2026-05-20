@@ -30,14 +30,23 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
       'VITE_ATS_API_URL não configurada. Crie .env (cp .env.example) e rode pnpm build:client de novo.',
     );
   }
-  const response = await fetch(`${API_BASE}${path}`, {
-    credentials: 'include',
-    ...init,
-    headers: {
-      ...(init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
-      ...init?.headers,
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      credentials: 'include',
+      ...init,
+      headers: {
+        ...(init?.body instanceof FormData ? {} : { 'Content-Type': 'application/json' }),
+        ...init?.headers,
+      },
+    });
+  } catch (err) {
+    const hint =
+      err instanceof TypeError
+        ? ` Não foi possível contactar a API ATS em ${API_BASE} (CORS, API parada ou imagem Docker desatualizada — rode: docker compose build api && docker compose up -d api).`
+        : '';
+    throw new AtsApiError(0, (err instanceof Error ? err.message : 'Erro de rede') + hint);
+  }
 
   if (!response.ok) {
     let message = response.statusText;
