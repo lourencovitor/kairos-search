@@ -1,102 +1,121 @@
 # Arquitetura — Kairos
 
-## C4 Level 1 — Contexto do Sistema
+## Diagrama 1 — Visão Geral do Sistema
 
-Visão de mais alto nível: quem usa o Kairos e com quais sistemas externos ele se integra.
+Quem usa o Kairos, o que está dentro do sistema e quais sistemas externos ele depende.
 
 ```mermaid
-C4Context
-    title Nível 1: Contexto — Kairos
+flowchart TB
+    User(["👤 Engenheiro de Software\nBrasil / LATAM"])
 
-    Person(user, "Engenheiro de Software", "Candidato buscando vagas tech no Brasil/LATAM")
+    subgraph Kairos["Kairos"]
+        direction LR
+        SPA["⚛️ React SPA\nMUI 9 · Filtros · Dark mode"]
+        Server["🖥️ Web Server\nNode.js HTTP"]
+        Pipeline["⚙️ Pipeline\nTypeScript · 12 fontes"]
+        Storage[("💾 File Storage\nJSON · CSV · Markdown")]
 
-    System(kairos, "Kairos", "Agrega vagas de 12+ fontes, ranqueia com heurísticas Brasil-first e apresenta via web UI filtrada")
+        SPA -- "GET /api/latest\nGET /api/download/*" --> Server
+        Server -- "dispara" --> Pipeline
+        Server -- "lê latest/" --> Storage
+        Pipeline -- "salva artefatos\natualiza symlinks" --> Storage
+    end
 
-    System_Ext(jobApis, "APIs Públicas de Vagas", "ProgramaThor, LinkedIn, Himalayas, Get on Board, Gupy, Remotive, RemoteOK")
-    System_Ext(ats, "ATS Diretos", "Greenhouse, Lever, Ashby — boards públicos de empresas")
-    System_Ext(browserMcpServer, "Browser MCP Server", "browsermcp.io — bridge para sessão de browser já autenticada (opt-in)")
-    System_Ext(render, "Render.com", "Plataforma de deploy e hospedagem (free tier)")
-    System_Ext(githubActions, "GitHub Actions", "CI/CD: lint, typecheck, testes e build em cada push/PR")
+    subgraph Fontes["Fontes de Vagas"]
+        direction TB
+        BR["🇧🇷 APIs Brasil\nProgramaThor · LinkedIn\nHimalayas · Get on Board · Gupy"]
+        ATS["🏢 ATS Diretos\nGreenhouse · Lever · Ashby"]
+        AGG["🌍 Agregadores\nRemotive · RemoteOK"]
+        BMCP["🔒 Browser MCP\nbrowsermcp.io — opt-in"]
+    end
 
-    Rel(user, kairos, "Acessa e filtra vagas via browser")
-    Rel(kairos, jobApis, "Coleta vagas via HTTP REST")
-    Rel(kairos, ats, "Coleta boards públicos de ATS via HTTP")
-    Rel(kairos, browserMcpServer, "Navegação autenticada em sites bloqueados (opcional)")
-    Rel(render, kairos, "Hospeda e serve em produção")
-    Rel(githubActions, kairos, "Valida qualidade em cada PR e push")
+    Render["☁️ Render.com"]
+    CI["⚙️ GitHub Actions\nNode 20 + 22"]
+
+    User -- "acessa via browser" --> SPA
+    Pipeline -- "fetch paralelo" --> BR & ATS & AGG
+    Pipeline -. "opt-in" .-> BMCP
+    Render -- "hospeda e serve" --> Kairos
+    CI -- "lint · typecheck · test · build" --> Kairos
 ```
 
 ---
 
-## C4 Level 2 — Containers
+## Diagrama 2 — Fluxo do Pipeline
 
-Os principais processos e componentes implantáveis dentro do Kairos.
+Como os dados fluem desde a coleta até os relatórios finais, incluindo o loop de expansão.
 
 ```mermaid
-C4Container
-    title Nível 2: Containers — Kairos
+flowchart LR
+    subgraph Coleta["Coleta — Promise.allSettled()"]
+        direction TB
+        S1["APIs Brasil\n5 fontes"]
+        S2["ATS Diretos\n3 fontes"]
+        S3["Agregadores\n2 fontes"]
+        S4["Manual JSON"]
+        S5["Browser MCP\nopt-in"]
+    end
 
-    Person(user, "Engenheiro de Software")
+    N["Normalize\nRawJobPosting → JobOpportunity\nremote policy · mercado · stack · seniority"]
+    F["Filter\nrole · idade 14–90d\nvisto · remote policy"]
+    R["Rank\nscore 0–100+\ntítulo · mercado · stack · recência · fonte"]
+    D["Dedup\ntítulo + empresa + URL\nmantém maior score"]
 
-    System_Boundary(kairos, "Kairos") {
-        Container(spa, "React SPA", "React 19 + MUI 9 + Vite", "Interface web com filtros por grupo, mercado, modalidade e relevância mínima. Tema dark/light.")
-        Container(server, "Web Server", "Node.js HTTP nativo + tsx", "Serve a SPA estática, expõe a REST API e gerencia o estado de runs do pipeline")
-        Container(pipeline, "Pipeline de Vagas", "Node.js + TypeScript", "Coleta, normaliza, filtra, ranqueia, deduplica e seleciona vagas. Roda via CLI ou disparado pela API.")
-        Container(storage, "File Storage", "Disco local (JSON / CSV / MD)", "Persiste cada run em runs/<timestamp>/. Mantém symlinks em latest/ para acesso rápido.")
-    }
+    EXP{"Vagas\nsuficientes?"}
 
-    System_Ext(jobApis, "APIs Públicas de Vagas")
-    System_Ext(ats, "ATS Diretos (Greenhouse, Lever, Ashby)")
-    System_Ext(browserMcpServer, "Browser MCP Server (opcional)")
+    SEL["Selection Policy\n92% Brasil-first · 8% intl\ncotas seniority · máx 30%/fonte\nvalidação de URLs"]
 
-    Rel(user, spa, "Visualiza e filtra vagas", "HTTPS")
-    Rel(spa, server, "GET /api/latest, GET /api/download/*", "HTTP / JSON")
-    Rel(server, pipeline, "Dispara via POST /api/run ou pnpm job-research")
-    Rel(server, storage, "Lê latest/ para servir os dados ao frontend")
-    Rel(pipeline, storage, "Salva artefatos do run e atualiza symlinks latest/")
-    Rel(pipeline, jobApis, "Fetch de vagas em paralelo", "HTTP / REST")
-    Rel(pipeline, ats, "Fetch de boards públicos", "HTTP / REST")
-    Rel(pipeline, browserMcpServer, "Navegação autenticada por MCP Protocol (opt-in)")
+    subgraph Output["Saída — data/job-research/latest/"]
+        direction TB
+        O1["report.md"]
+        O2["report.csv\n+ 8 CSVs por grupo"]
+        O3["summary.json\nselected-jobs.json\nranked-jobs.json\nfilter-funnel.json"]
+    end
+
+    Coleta --> N --> F --> R --> D --> EXP
+    EXP -- "não — expande paginação\n(até 2×)" --> Coleta
+    EXP -- "sim" --> SEL --> Output
 ```
 
 ---
 
-## C4 Level 3 — Componentes do Pipeline
+## Diagrama 3 — Arquitetura Web
 
-O pipeline é o coração do sistema. Este diagrama detalha os componentes internos e o fluxo de dados entre eles.
+Como o servidor, a SPA e o file storage se relacionam em runtime.
 
 ```mermaid
-C4Component
-    title Nível 3: Componentes — Pipeline de Vagas (index.ts)
+flowchart TB
+    subgraph Browser["Navegador"]
+        SPA["React SPA\nFiltersPanel · JobCard · GroupDistribution\nuseFilteredJobs · useLatestPayload"]
+    end
 
-    Container_Ext(trigger, "Web Server / CLI", "Dispara o pipeline")
-    Container_Ext(storage, "File Storage", "Persiste artefatos")
+    subgraph WebServer["Web Server — Node.js"]
+        MW["Middleware\nCORS · Rate limit 60 req/min · Bearer auth"]
+        subgraph Routes["Rotas"]
+            R1["GET /api/latest"]
+            R2["POST /api/run"]
+            R3["GET /api/download/:file\nGET /api/download-all"]
+            R4["POST /api/upload-latest/:file"]
+            R5["* → index.html (SPA fallback)"]
+        end
+        MW --> Routes
+    end
 
-    Container_Boundary(pipeline, "Pipeline de Vagas") {
-        Component(sources, "Source Adapters (12)", "sources/*.source.ts", "Coleta vagas em paralelo via Promise.allSettled(). Falha em uma fonte não cancela as demais.")
-        Component(normalizer, "Job Normalizer", "skills/job-normalizer.skill.ts", "Mapeia RawJobPosting → JobOpportunity. Detecta: remote policy, mercado, stack signals, senioridade, restrições de visto.")
-        Component(filter, "Job Filter", "skills/job-filter.skill.ts", "Remove vagas irrelevantes por: role, idade da vaga (14–90 dias), restrição de visto, remote policy.")
-        Component(ranker, "Job Ranker", "skills/job-ranker.skill.ts", "Calcula score 0–100+ por: título, senioridade, mercado, localização Brasil, stack técnico, recência e qualidade da fonte.")
-        Component(dedup, "Duplicate Detector", "skills/duplicate-detector.skill.ts", "Detecta e remove duplicatas entre fontes por título+empresa+URL. Mantém a entrada com maior score.")
-        Component(selector, "Selection Policy", "skills/job-selection-policy.skill.ts", "Aplica estratégia Brasil-first (92/8), cotas de senioridade, limite de 30% por fonte e validação de URLs via HTTP HEAD.")
-        Component(reportMd, "Markdown Generator", "report/markdown-report.generator.ts", "Gera report.md agrupado por senioridade e categoria de role.")
-        Component(reportCsv, "CSV Generator", "report/csv-report.generator.ts", "Gera report.csv geral + 8 CSVs por grupo (junior, pleno, senior, staff, arq, qa, devops, management).")
-        Component(expansion, "Search Expansion Loop", "index.ts", "Se vagas insuficientes após a primeira rodada, incrementa limites de paginação e re-executa até 2x.")
-    }
+    subgraph FS["File Storage"]
+        Latest["latest/\n(symlinks para o run mais recente)"]
+        Runs["runs/\n(histórico completo)"]
+    end
 
-    Rel(trigger, sources, "Inicia pipeline com config")
-    Rel(sources, normalizer, "RawJobPosting[] (~500–1000)")
-    Rel(normalizer, filter, "JobOpportunity[] (campos unificados)")
-    Rel(filter, ranker, "JobOpportunity[] (relevantes)")
-    Rel(ranker, dedup, "JobOpportunity[] (com score calculado)")
-    Rel(dedup, expansion, "JobOpportunity[] (deduplicados)")
-    Rel(expansion, sources, "Re-executa com paginação expandida se insuficiente")
-    Rel(expansion, selector, "JobOpportunity[] (suficientes ou limite atingido)")
-    Rel(selector, reportMd, "JobOpportunity[] (Top N selecionados)")
-    Rel(selector, reportCsv, "JobOpportunity[] (Top N selecionados)")
-    Rel(reportMd, storage, "report.md")
-    Rel(reportCsv, storage, "report.csv, report-junior.csv, ..., report-management.csv")
-    Rel(selector, storage, "summary.json, selected-jobs.json, ranked-jobs.json, filter-funnel.json")
+    Pipeline["Pipeline de Vagas\n(processo assíncrono)"]
+    RefreshSh["refresh.sh\nrun local → upload produção"]
+
+    SPA -- "HTTP / JSON" --> MW
+    R1 & R3 -- "lê" --> Latest
+    R2 -- "dispara" --> Pipeline
+    Pipeline -- "salva e cria symlink" --> Latest
+    Pipeline -- "persiste" --> Runs
+    RefreshSh -- "x-upload-key header" --> R4
+    R4 -- "atualiza" --> Latest
 ```
 
 ---
@@ -204,40 +223,6 @@ Todas as fontes são executadas em paralelo via `Promise.allSettled()`. Falha em
 **`app.ts`** — Roteador de APIs com middlewares globais (CORS, rate limit, auth).
 
 **`client/`** — SPA React 19 + MUI 9 buildada com Vite. Consome `GET /api/latest`.
-
----
-
-## Fluxo de dados detalhado
-
-```
-CLI flags / POST /api/run
-         │
-         ▼
-  JobResearchAgent.run()
-         │
-         ├─ Promise.allSettled([11 fontes HTTP + Browser MCP opcional])
-         │         │
-         │         ▼ RawJobPosting[] (~500–1000)
-         │
-         ├─ normalize  → JobOpportunity[] (campos unificados)
-         ├─ filter     → remove irrelevantes
-         ├─ rank       → adiciona score 0–100+
-         ├─ dedup      → remove duplicatas
-         │         │
-         │         ▼ (search expansion loop — até 2x se insuficiente)
-         │
-         ├─ selectReportJobs()
-         │   ├─ 92% Brazil-first (com cotas de senioridade)
-         │   ├─ 8% fallback internacional
-         │   ├─ máx 30% por fonte
-         │   └─ validação de URLs via HTTP HEAD
-         │         │
-         │         ▼ JobOpportunity[] (Top N)
-         │
-         ├─ MarkdownReportGenerator → report.md
-         ├─ CsvReportGenerator     → report.csv + 8 CSVs por grupo
-         └─ FileJobStorage         → runs/<timestamp>/ + latest/
-```
 
 ---
 
