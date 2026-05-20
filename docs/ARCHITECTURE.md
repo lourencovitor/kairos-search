@@ -1,13 +1,105 @@
 # Arquitetura — Kairos
 
-## Visão geral
+## C4 Level 1 — Contexto do Sistema
 
-Kairos é um pipeline de processamento de vagas composto por dois modos de operação:
+Visão de mais alto nível: quem usa o Kairos e com quais sistemas externos ele se integra.
 
-1. **Modo CLI** (`pnpm job-research`): executa o pipeline completo e salva relatórios em disco
-2. **Modo Web** (`pnpm job-web`): sobe um servidor HTTP que serve a API REST e a SPA React; o pipeline pode ser disparado via `POST /api/run`
+```mermaid
+C4Context
+    title Nível 1: Contexto — Kairos
 
-Os dois modos compartilham o mesmo núcleo de pipeline definido em `src/job-research-agent/index.ts`.
+    Person(user, "Engenheiro de Software", "Candidato buscando vagas tech no Brasil/LATAM")
+
+    System(kairos, "Kairos", "Agrega vagas de 12+ fontes, ranqueia com heurísticas Brasil-first e apresenta via web UI filtrada")
+
+    System_Ext(jobApis, "APIs Públicas de Vagas", "ProgramaThor, LinkedIn, Himalayas, Get on Board, Gupy, Remotive, RemoteOK")
+    System_Ext(ats, "ATS Diretos", "Greenhouse, Lever, Ashby — boards públicos de empresas")
+    System_Ext(browserMcpServer, "Browser MCP Server", "browsermcp.io — bridge para sessão de browser já autenticada (opt-in)")
+    System_Ext(render, "Render.com", "Plataforma de deploy e hospedagem (free tier)")
+    System_Ext(githubActions, "GitHub Actions", "CI/CD: lint, typecheck, testes e build em cada push/PR")
+
+    Rel(user, kairos, "Acessa e filtra vagas via browser")
+    Rel(kairos, jobApis, "Coleta vagas via HTTP REST")
+    Rel(kairos, ats, "Coleta boards públicos de ATS via HTTP")
+    Rel(kairos, browserMcpServer, "Navegação autenticada em sites bloqueados (opcional)")
+    Rel(render, kairos, "Hospeda e serve em produção")
+    Rel(githubActions, kairos, "Valida qualidade em cada PR e push")
+```
+
+---
+
+## C4 Level 2 — Containers
+
+Os principais processos e componentes implantáveis dentro do Kairos.
+
+```mermaid
+C4Container
+    title Nível 2: Containers — Kairos
+
+    Person(user, "Engenheiro de Software")
+
+    System_Boundary(kairos, "Kairos") {
+        Container(spa, "React SPA", "React 19 + MUI 9 + Vite", "Interface web com filtros por grupo, mercado, modalidade e relevância mínima. Tema dark/light.")
+        Container(server, "Web Server", "Node.js HTTP nativo + tsx", "Serve a SPA estática, expõe a REST API e gerencia o estado de runs do pipeline")
+        Container(pipeline, "Pipeline de Vagas", "Node.js + TypeScript", "Coleta, normaliza, filtra, ranqueia, deduplica e seleciona vagas. Roda via CLI ou disparado pela API.")
+        Container(storage, "File Storage", "Disco local (JSON / CSV / MD)", "Persiste cada run em runs/<timestamp>/. Mantém symlinks em latest/ para acesso rápido.")
+    }
+
+    System_Ext(jobApis, "APIs Públicas de Vagas")
+    System_Ext(ats, "ATS Diretos (Greenhouse, Lever, Ashby)")
+    System_Ext(browserMcpServer, "Browser MCP Server (opcional)")
+
+    Rel(user, spa, "Visualiza e filtra vagas", "HTTPS")
+    Rel(spa, server, "GET /api/latest, GET /api/download/*", "HTTP / JSON")
+    Rel(server, pipeline, "Dispara via POST /api/run ou pnpm job-research")
+    Rel(server, storage, "Lê latest/ para servir os dados ao frontend")
+    Rel(pipeline, storage, "Salva artefatos do run e atualiza symlinks latest/")
+    Rel(pipeline, jobApis, "Fetch de vagas em paralelo", "HTTP / REST")
+    Rel(pipeline, ats, "Fetch de boards públicos", "HTTP / REST")
+    Rel(pipeline, browserMcpServer, "Navegação autenticada por MCP Protocol (opt-in)")
+```
+
+---
+
+## C4 Level 3 — Componentes do Pipeline
+
+O pipeline é o coração do sistema. Este diagrama detalha os componentes internos e o fluxo de dados entre eles.
+
+```mermaid
+C4Component
+    title Nível 3: Componentes — Pipeline de Vagas (index.ts)
+
+    Container_Ext(trigger, "Web Server / CLI", "Dispara o pipeline")
+    Container_Ext(storage, "File Storage", "Persiste artefatos")
+
+    Container_Boundary(pipeline, "Pipeline de Vagas") {
+        Component(sources, "Source Adapters (12)", "sources/*.source.ts", "Coleta vagas em paralelo via Promise.allSettled(). Falha em uma fonte não cancela as demais.")
+        Component(normalizer, "Job Normalizer", "skills/job-normalizer.skill.ts", "Mapeia RawJobPosting → JobOpportunity. Detecta: remote policy, mercado, stack signals, senioridade, restrições de visto.")
+        Component(filter, "Job Filter", "skills/job-filter.skill.ts", "Remove vagas irrelevantes por: role, idade da vaga (14–90 dias), restrição de visto, remote policy.")
+        Component(ranker, "Job Ranker", "skills/job-ranker.skill.ts", "Calcula score 0–100+ por: título, senioridade, mercado, localização Brasil, stack técnico, recência e qualidade da fonte.")
+        Component(dedup, "Duplicate Detector", "skills/duplicate-detector.skill.ts", "Detecta e remove duplicatas entre fontes por título+empresa+URL. Mantém a entrada com maior score.")
+        Component(selector, "Selection Policy", "skills/job-selection-policy.skill.ts", "Aplica estratégia Brasil-first (92/8), cotas de senioridade, limite de 30% por fonte e validação de URLs via HTTP HEAD.")
+        Component(reportMd, "Markdown Generator", "report/markdown-report.generator.ts", "Gera report.md agrupado por senioridade e categoria de role.")
+        Component(reportCsv, "CSV Generator", "report/csv-report.generator.ts", "Gera report.csv geral + 8 CSVs por grupo (junior, pleno, senior, staff, arq, qa, devops, management).")
+        Component(expansion, "Search Expansion Loop", "index.ts", "Se vagas insuficientes após a primeira rodada, incrementa limites de paginação e re-executa até 2x.")
+    }
+
+    Rel(trigger, sources, "Inicia pipeline com config")
+    Rel(sources, normalizer, "RawJobPosting[] (~500–1000)")
+    Rel(normalizer, filter, "JobOpportunity[] (campos unificados)")
+    Rel(filter, ranker, "JobOpportunity[] (relevantes)")
+    Rel(ranker, dedup, "JobOpportunity[] (com score calculado)")
+    Rel(dedup, expansion, "JobOpportunity[] (deduplicados)")
+    Rel(expansion, sources, "Re-executa com paginação expandida se insuficiente")
+    Rel(expansion, selector, "JobOpportunity[] (suficientes ou limite atingido)")
+    Rel(selector, reportMd, "JobOpportunity[] (Top N selecionados)")
+    Rel(selector, reportCsv, "JobOpportunity[] (Top N selecionados)")
+    Rel(reportMd, storage, "report.md")
+    Rel(reportCsv, storage, "report.csv, report-junior.csv, ..., report-management.csv")
+    Rel(selector, storage, "summary.json, selected-jobs.json, ranked-jobs.json, filter-funnel.json")
+```
+
+---
 
 ## Módulos e responsabilidades
 
@@ -34,7 +126,7 @@ src/job-research-agent/
 
 ### `index.ts` — Orquestrador
 
-Responsável por coordenar todas as etapas do pipeline. Implementa o loop de search expansion: se não houver vagas suficientes após a primeira rodada, incrementa os limites de paginação e re-executa fetching, normalização, filtragem e ranking antes de selecionar.
+Coordena todas as etapas do pipeline. Implementa o loop de search expansion: se não houver vagas suficientes após a primeira rodada, incrementa os limites de paginação e re-executa fetching, normalização, filtragem e ranking antes de selecionar.
 
 ### `config/` — Configuração central
 
@@ -52,13 +144,14 @@ Todas as opções podem ser sobrescritas programaticamente ou via CLI flags.
 
 Define os tipos centrais do sistema:
 
-- `JobOpportunity` — modelo unificado de vaga após normalização
-- `JobMarket` — `brazil | brazil_friendly | latam | international | unclear`
-- `SeniorityLevel` — `junior | mid_level | senior | lead | staff | principal | staff_or_principal | architect | unknown`
-- `RoleCategory` — `software_engineering | tech_lead | devops | software_architecture | solutions_architecture | cloud_architecture | qa | management`
-- `RemotePolicy` — `remote | hybrid | onsite | unknown`
-- `SeniorityReportGroupV2` — 8 grupos para CSV e UI
-- `JobSourceTier` — `manual_curated | brazil_public_api | direct_company_board | global_aggregator`
+| Tipo | Valores |
+|---|---|
+| `JobMarket` | `brazil \| brazil_friendly \| latam \| international \| unclear` |
+| `SeniorityLevel` | `junior \| mid_level \| senior \| lead \| staff \| principal \| staff_or_principal \| architect \| unknown` |
+| `RoleCategory` | `software_engineering \| tech_lead \| devops \| software_architecture \| solutions_architecture \| cloud_architecture \| qa \| management` |
+| `RemotePolicy` | `remote \| hybrid \| onsite \| unknown` |
+| `SeniorityReportGroupV2` | `junior \| pleno \| senior \| staff \| arq \| qa \| devops \| management \| other` |
+| `JobSourceTier` | `manual_curated \| brazil_public_api \| direct_company_board \| global_aggregator` |
 
 ### `sources/` — Adaptadores de fontes
 
@@ -72,144 +165,142 @@ interface JobSource {
 
 Todas as fontes são executadas em paralelo via `Promise.allSettled()`. Falha em uma fonte não interrompe as demais.
 
-**Fontes HTTP disponíveis (11):**
-- `manual-job-input.source.ts` — Lê JSONs de `data/manual-inputs/`
-- `programathor.source.ts` — API pública ProgramaThor
-- `linkedin.source.ts` — API pública LinkedIn (sem autenticação)
-- `himalayas.source.ts` — API pública Himalayas
-- `getonboard.source.ts` — API pública Get on Board
-- `gupy.source.ts` — API pública Gupy
-- `greenhouse.source.ts` — Boards de ATS Greenhouse (lista configurável de empresas)
-- `lever.source.ts` — Boards de ATS Lever (lista configurável de empresas)
-- `ashby.source.ts` — Boards de ATS Ashby (lista configurável de empresas)
-- `remotive.source.ts` — Agregador Remotive
-- `remoteok.source.ts` — Agregador RemoteOK
+**Fontes HTTP (11):** Manual JSON, ProgramaThor, LinkedIn, Himalayas, Get on Board, Gupy, Greenhouse, Lever, Ashby, Remotive, RemoteOK.
 
-**Browser MCP Engine (opcional):**
-- `browser-mcp/browser-mcp.engine.ts` — Orquestra navegação via MCP
-- `browser-mcp/site-adapters/` — 10 adaptadores: LinkedIn, ProgramaThor, Glassdoor, Vagas.com, Catho, InfoJobs BR, Gupy public, Trampos.co, Revelo, GeekHunter
+**Browser MCP Engine (opcional):** 10 adaptadores de sites — LinkedIn, ProgramaThor, Glassdoor, Vagas.com, Catho, InfoJobs BR, Gupy public, Trampos.co, Revelo, GeekHunter.
 
 ### `skills/` — Pipeline de transformação
 
-Cada skill recebe e retorna dados do domínio sem efeitos colaterais:
-
-| Skill | Entrada | Saída | Responsabilidade |
-|---|---|---|---|
-| `job-normalizer` | `RawJobPosting[]` | `JobOpportunity[]` | Mapeia campos, detecta remote policy, classifica mercado, extrai stack signals, detecta senioridade |
-| `job-filter` | `JobOpportunity[]` | `JobOpportunity[]` | Remove irrelevantes (role, idade, visto, remote policy) |
-| `job-ranker` | `JobOpportunity[]` | `JobOpportunity[]` | Calcula `score` (0–100+) para cada vaga |
-| `duplicate-detector` | `JobOpportunity[]` | `JobOpportunity[]` | Remove duplicatas por título+empresa+URL; mantém maior score |
-| `job-market-classifier` | `RawJobPosting` | `JobMarket` | Classifica mercado do job |
-| `remote-policy-detector` | `RawJobPosting` | `RemotePolicy` | Detecta modalidade |
-| `visa-restriction-detector` | `RawJobPosting` | `VisaSignal` | Detecta restrições de visto |
-| `stack-matcher` | `string` | `StackSignal[]` | Detecta tecnologias na descrição |
-| `job-selection-policy` | `JobOpportunity[]` | `JobOpportunity[]` | Aplica estratégia Brasil-first, diversidade de fonte e validação de URL |
+| Skill | Responsabilidade |
+|---|---|
+| `job-normalizer` | Mapeia campos heterogêneos para `JobOpportunity` unificado |
+| `job-filter` | Remove irrelevantes (role, idade, visto, remote policy) |
+| `job-ranker` | Calcula `score` 0–100+ |
+| `duplicate-detector` | Remove duplicatas entre fontes; mantém maior score |
+| `job-market-classifier` | Classifica mercado da vaga |
+| `remote-policy-detector` | Detecta modalidade (remote / hybrid / onsite) |
+| `visa-restriction-detector` | Detecta restrições de visto |
+| `stack-matcher` | Extrai stack técnico da descrição |
+| `job-selection-policy` | Aplica Brasil-first, cotas de senioridade, diversidade de fonte |
 
 ### `report/` — Geradores de relatório
 
-- `markdown-report.generator.ts` — Gera `report.md` legível, agrupado por senioridade e categoria
-- `csv-report.generator.ts` — Gera `report.csv` geral + 8 CSVs por grupo (`report-junior.csv`, `report-pleno.csv`, etc.)
+- `markdown-report.generator.ts` — `report.md` legível, agrupado por senioridade e categoria
+- `csv-report.generator.ts` — `report.csv` geral + 8 CSVs por grupo
 
 ### `storage/` — Persistência
 
-`FileJobStorage` salva todos os artefatos em `data/job-research/runs/<timestamp>/` e cria/atualiza symlinks em `data/job-research/latest/` para o run mais recente.
+`FileJobStorage` salva todos os artefatos em `data/job-research/runs/<timestamp>/` e mantém symlinks em `data/job-research/latest/`.
 
 **Artefatos por run:**
-- `report.md`, `report.csv`, `report-*.csv` — Relatórios
-- `summary.json` — Metadata (contagens, distribuição de mercado)
-- `selected-jobs.json` — Top N vagas com todos os campos
-- `ranked-jobs.json` — Todos os jobs ranqueados (para análise)
-- `filter-funnel.json` — Estatísticas de rejeição por etapa
-- `browser-mcp-trace.json` — Trace de navegação (apenas se Browser MCP ativo)
+- `report.md`, `report.csv`, `report-*.csv`
+- `summary.json`, `selected-jobs.json`, `ranked-jobs.json`, `filter-funnel.json`
+- `browser-mcp-trace.json` (apenas se Browser MCP ativo)
 
 ### `web/` — Servidor HTTP e frontend
 
-**`server.ts`** — Entry point. Sobe o servidor HTTP nativo do Node. Em `NODE_ENV=development`, também inicia o Vite dev server como middleware. Em produção, serve os arquivos pré-buildados de `dist/`.
+**`server.ts`** — Entry point. Em `NODE_ENV=development`, inicia o Vite dev server como middleware. Em produção, serve os arquivos pré-buildados de `dist/`.
 
-**`app.ts`** — Define o roteador de APIs e aplica middlewares globais (CORS, rate limit, auth).
+**`app.ts`** — Roteador de APIs com middlewares globais (CORS, rate limit, auth).
 
-**`routes/`** — Um arquivo por endpoint. Ver [`docs/API.md`](API.md) para referência completa.
+**`client/`** — SPA React 19 + MUI 9 buildada com Vite. Consome `GET /api/latest`.
 
-**`middleware/`** — CORS configurável, rate limiting (60 req/min), autenticação por bearer token.
+---
 
-**`client/`** — SPA React 19 + MUI 9 buildada com Vite. Consome `GET /api/latest` e exibe as vagas com filtros interativos.
-
-## Fluxo de dados
+## Fluxo de dados detalhado
 
 ```
 CLI flags / POST /api/run
          │
          ▼
-  JobResearchAgent.run()                        [index.ts]
+  JobResearchAgent.run()
          │
-         ├── Promise.allSettled([fonte1, ..., fonte11, browserMcp?])
+         ├─ Promise.allSettled([11 fontes HTTP + Browser MCP opcional])
          │         │
-         │         ▼
-         │   RawJobPosting[] (~500-1000 por run típico)
-         │         │
-         ├── normalize  → JobOpportunity[] (campos unificados, sinais detectados)
-         ├── filter     → remove irrelevantes (role, idade, visto, remote)
-         ├── rank       → adiciona score (0-100+)
-         ├── dedup      → remove duplicatas entre fontes
-         │         │
-         │         ▼ (loop de search expansion se vagas insuficientes)
+         │         ▼ RawJobPosting[] (~500–1000)
          │
-         ├── selectReportJobs()
-         │   ├── Filtra por minReportScore
-         │   ├── Aloca 92% Brazil-first (com cotas de senioridade)
-         │   ├── Preenche 8% com fallback internacional
-         │   ├── Limita 30% por fonte
-         │   └── Valida URLs (HTTP HEAD)
+         ├─ normalize  → JobOpportunity[] (campos unificados)
+         ├─ filter     → remove irrelevantes
+         ├─ rank       → adiciona score 0–100+
+         ├─ dedup      → remove duplicatas
          │         │
-         │         ▼
-         │   JobOpportunity[] (Top N selecionados)
+         │         ▼ (search expansion loop — até 2x se insuficiente)
+         │
+         ├─ selectReportJobs()
+         │   ├─ 92% Brazil-first (com cotas de senioridade)
+         │   ├─ 8% fallback internacional
+         │   ├─ máx 30% por fonte
+         │   └─ validação de URLs via HTTP HEAD
          │         │
-         ├── MarkdownReportGenerator → report.md
-         ├── CsvReportGenerator     → report.csv + 8 CSVs por grupo
-         └── FileJobStorage         → salva em runs/<timestamp>/, symlinks latest/
+         │         ▼ JobOpportunity[] (Top N)
+         │
+         ├─ MarkdownReportGenerator → report.md
+         ├─ CsvReportGenerator     → report.csv + 8 CSVs por grupo
+         └─ FileJobStorage         → runs/<timestamp>/ + latest/
 ```
+
+---
 
 ## Decisões arquiteturais
 
 ### File-based, sem banco de dados
-**Decisão:** Todos os dados são persistidos em JSON/CSV/MD no disco.  
-**Motivo:** Simplicidade de deploy (zero dependências externas), portabilidade, inspecionabilidade dos outputs sem ferramentas especiais.  
-**Limitação:** Não escala para múltiplos usuários simultâneos rodando pipelines; histórico de runs ocupa disco gradualmente.
+
+**Decisão:** Todos os dados são persistidos em JSON/CSV/MD no disco.
+
+**Motivo:** Simplicidade de deploy (zero dependências externas), portabilidade, inspecionabilidade dos outputs sem ferramentas especiais.
+
+**Limitação:** Não escala para múltiplos usuários simultâneos disparando pipelines; histórico de runs ocupa disco gradualmente.
 
 ### `Promise.allSettled()` para fontes
-**Decisão:** Falha em uma fonte não cancela as demais.  
-**Motivo:** Fontes externas são instáveis; um timeout do Remotive não deve impedir resultados do ProgramaThor.
 
-### Browser MCP como opt-in
-**Decisão:** Browser MCP requer double opt-in (flag global + por site).  
-**Motivo:** Requer Playwright instalado e sessão autenticada no browser do usuário. Deploy em servidor (Render.com) usa `DISABLE_BROWSER=true`.
+**Decisão:** Falha em uma fonte não cancela as demais.
 
-### Score como número único
-**Decisão:** O ranking usa um score 0–100+ composto.  
-**Motivo:** Simplifica ordenação e filtragem. O score detalhado (`JobScoreBreakdown`) está disponível para debug mas não é exposto na UI.
+**Motivo:** Fontes externas são instáveis. Um timeout no Remotive não deve impedir resultados do ProgramaThor.
+
+### Browser MCP como double opt-in
+
+**Decisão:** Requer habilitação global + por site.
+
+**Motivo:** Requer Playwright instalado e sessão autenticada no browser do usuário. Deploy em servidor usa `DISABLE_BROWSER=true`.
+
+### Score como número único (0–100+)
+
+**Decisão:** Ranking usa um score composto.
+
+**Motivo:** Simplifica ordenação e filtragem na UI. O detalhamento (`JobScoreBreakdown`) está disponível para debug mas não exposto na UI.
 
 ### Symlinks `latest/`
-**Decisão:** `data/job-research/latest/` aponta sempre para o run mais recente via symlinks.  
-**Motivo:** A API (`GET /api/latest`) e o `refresh.sh` sempre leem de `latest/`, sem precisar saber o timestamp do run atual.
+
+**Decisão:** `data/job-research/latest/` aponta para o run mais recente.
+
+**Motivo:** A API e o `refresh.sh` sempre leem de `latest/` sem precisar saber o timestamp atual. Permite atualização atômica (rename) sem downtime.
+
+---
 
 ## Pontos de extensão
 
-- **Nova fonte HTTP**: implementar `JobSource`, registrar em `index.ts`, adicionar configuração em `job-research.config.ts`
-- **Nova fonte Browser MCP**: criar adaptador em `sources/browser-mcp/site-adapters/`, registrar no índice
-- **Novo grupo de relatório**: adicionar em `SeniorityReportGroupV2` (domain), `toSeniorityReportGroupV2()` (shared), atualizar `CsvReportGenerator`
-- **Novo sinal de stack**: adicionar em `stack-matcher.skill.ts` e no ranker
+| O que adicionar | Onde |
+|---|---|
+| Nova fonte HTTP | `sources/`, interface `JobSource`, registro em `index.ts` |
+| Novo site Browser MCP | `sources/browser-mcp/site-adapters/` + registro no índice |
+| Novo grupo de relatório | `domain/job.types.ts` → `skills/` → `report/csv-report.generator.ts` → frontend `utils/report-group.ts` |
+| Novo sinal de stack | `skills/stack-matcher.skill.ts` + `skills/job-ranker.skill.ts` |
+| Novo endpoint de API | `web/routes/` + registro em `web/app.ts` |
+
+---
 
 ## Limitações conhecidas
 
-- Um único pipeline por processo (sem fila de jobs)
-- Sem autenticação para o frontend React (qualquer um com a URL acessa)
-- `pnpm build:client` requer Node.js >= 20.19 ou 22.12 (Vite 8 restrição); CI roda com Node 20 usando versão compatível
-- Symlinks de `latest/` podem quebrar em sistemas de arquivo Windows sem suporte a symlinks
+- Um único pipeline por processo (sem fila; `POST /api/run` retorna 409 se já há um run ativo)
+- Sem autenticação no frontend React (qualquer um com a URL acessa as vagas)
+- `pnpm build:client` requer Node.js >= 20.19 ou 22.12 (Vite 8); CI roda com Node 20 que satisfaz este requisito
+- Symlinks de `latest/` podem não funcionar em Windows sem privilégios de administrador ou modo Developer
 
 ## Possíveis melhorias futuras
 
 - Agendamento automático do pipeline (cron via Render ou GitHub Actions scheduled)
-- Persistência em SQLite para histórico de runs e variety tracking
-- Autenticação no frontend
-- Paginação na API `GET /api/latest` (atualmente retorna todos os jobs em memória)
+- Persistência em SQLite para histórico de runs e variety tracking entre dias
+- Autenticação na UI (Clerk, Auth.js ou similar)
+- Paginação na API `GET /api/latest` (atualmente carrega tudo em memória)
 - Webhook para notificar quando um novo run termina
+- ADRs formais em `docs/DECISIONS/` à medida que decisões relevantes forem tomadas

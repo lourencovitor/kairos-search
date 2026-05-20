@@ -1,5 +1,13 @@
 # Contribuindo — Kairos
 
+Obrigado pelo interesse em contribuir! Este guia explica como participar, desde reportar um bug até abrir um PR.
+
+## Onde começar?
+
+- **Bug?** Abra uma [issue de bug](https://github.com/lourencovitor/kairos-search/issues/new?template=bug_report.yml)
+- **Ideia ou melhoria?** Abra uma [feature request](https://github.com/lourencovitor/kairos-search/issues/new?template=feature_request.yml)
+- **Quer contribuir com código?** Leia este guia até o final
+
 ## Pré-requisitos
 
 - Node.js >= 20.0.0
@@ -11,16 +19,16 @@ pnpm install
 
 ## Antes de abrir um PR
 
-Certifique-se de que os seguintes comandos passam sem erros:
+Os seguintes comandos devem passar sem erros:
 
 ```bash
 pnpm typecheck     # TypeScript sem erros
 pnpm lint          # ESLint sem erros
 pnpm test          # Todos os testes passando
-pnpm build:client  # Frontend buildando
+pnpm build:client  # Frontend buildando sem erros
 ```
 
-O pre-commit hook (husky) roda lint e format automaticamente nos arquivos staged.
+O pre-commit hook (husky) roda lint e format automaticamente nos arquivos staged. Se o hook falhar, corrija antes de commitar.
 
 ## Convenções de branch
 
@@ -34,36 +42,36 @@ refactor/descricao-do-refactor
 
 ## Convenções de commit
 
-Mensagens em português, formato:
+Mensagens em **português**, formato:
 
 ```
-tipo(escopo): descrição curta
+tipo(escopo): descrição curta no imperativo
 
-corpo opcional explicando o porquê
+corpo opcional explicando o porquê (não o quê)
 ```
 
 Tipos: `feat`, `fix`, `chore`, `docs`, `refactor`, `test`, `perf`
 
-Exemplos:
-```
+```bash
+# Exemplos
 feat(sources): adicionar suporte ao Revelo como fonte
 fix(ranker): corrigir cálculo de score para vagas internacionais
 chore(data): atualizar vagas e build
 docs(api): documentar endpoint de upload
+test(normalizer): adicionar casos para remote policy desconhecida
 ```
 
-## Adicionando uma nova fonte de vagas
+## Como adicionar uma nova fonte de vagas
 
-Ver [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md#como-adicionar-uma-nova-fonte-http).
+Veja [`docs/DEVELOPMENT.md`](docs/DEVELOPMENT.md#como-adicionar-uma-nova-fonte-http) para o passo a passo completo com código de exemplo.
 
-## Reportar bugs
+## Abrindo o PR
 
-Abra uma issue descrevendo:
-1. O que aconteceu
-2. O que era esperado
-3. Como reproduzir
-4. Versão do Node.js e output relevante dos logs
+1. Fork o repositório
+2. Crie uma branch a partir de `main`
+3. Implemente e teste
+4. Abra o PR contra `main` — o template de PR já aparece automaticamente com o checklist
 
-## Sugerir melhorias
+## Dúvidas?
 
-Abra uma issue descrevendo o problema que a melhoria resolve e, se possível, uma proposta de implementação.
+Abra uma issue com a label `question` ou comente diretamente em um PR/issue existente.

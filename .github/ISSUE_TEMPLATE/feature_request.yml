@@ -1,0 +1,52 @@
+name: Feature request
+description: Sugira uma nova funcionalidade ou melhoria
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ótimo! Antes de abrir, verifique se já não existe uma issue similar.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área relacionada
+      options:
+        - Nova fonte de vagas
+        - Pipeline (normalização, filtragem, ranking)
+        - Web UI
+        - API REST
+        - Browser MCP
+        - Deploy / Infraestrutura
+        - Documentação
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Qual problema esta feature resolve?
+      description: Descreva a situação atual e por que ela é um problema
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solução proposta
+      description: Como você imagina que isso deveria funcionar?
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternativas consideradas
+      description: Você pensou em outras abordagens? Por que não seriam suficientes?
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexto adicional
+      description: Qualquer outra informação, prints, links ou referências relevantes

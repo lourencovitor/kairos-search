@@ -1,0 +1,72 @@
+name: Bug report
+description: Algo não está funcionando como esperado
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Obrigado por reportar! Preencha os campos abaixo para nos ajudar a reproduzir e corrigir o problema.
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Área afetada
+      options:
+        - Pipeline CLI (pnpm job-research)
+        - Web UI (interface React)
+        - API REST
+        - Browser MCP Engine
+        - Uma fonte específica (ProgramaThor, LinkedIn, etc.)
+        - Build / CI
+        - Outro
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: O que aconteceu?
+      description: Descreva o comportamento incorreto
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: O que era esperado?
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Como reproduzir
+      description: Passos para reproduzir o problema
+      placeholder: |
+        1. Execute `pnpm job-research --top=10`
+        2. Observe o erro no terminal
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs relevantes
+      description: Cole aqui o output do terminal ou erro relevante
+      render: shell
+
+  - type: input
+    id: node-version
+    attributes:
+      label: Versão do Node.js
+      placeholder: "ex: 20.19.0 (node --version)"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Sistema operacional
+      placeholder: "ex: macOS 15.4, Ubuntu 22.04, Windows 11"
+    validations:
+      required: true

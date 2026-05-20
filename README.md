@@ -1,8 +1,14 @@
 # Kairos
 
+[![CI](https://github.com/lourencovitor/kairos-search/actions/workflows/ci.yml/badge.svg)](https://github.com/lourencovitor/kairos-search/actions/workflows/ci.yml)
+[![Node.js](https://img.shields.io/badge/node-%3E%3D20.0.0-brightgreen)](https://nodejs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue)](https://www.typescriptlang.org)
+
 Pipeline de coleta, ranking e apresentação de vagas de software engineering com foco Brasil-first.
 
 Agrega vagas de 12+ fontes (APIs públicas, boards de ATS, agregadores globais e Browser MCP opcional), normaliza, filtra, ranqueia com heurísticas Brasil-first e entrega via web UI filtrada ou relatórios CSV/Markdown.
+
+> **Por que "Kairos"?** Em grego, *kairos* (καιρός) significa o momento oportuno — a hora certa de agir. O nome reflete o objetivo: encontrar a vaga certa, na hora certa.
 
 ## Funcionalidades
 
