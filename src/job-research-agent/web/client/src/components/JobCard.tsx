@@ -1,7 +1,8 @@
 import { memo } from 'react';
 
+import AnalyticsOutlinedIcon from '@mui/icons-material/AnalyticsOutlined';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { Box, Card, CardContent, Link, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Button, Card, CardContent, Link, Stack, Tooltip, Typography } from '@mui/material';
 
 import type { JobOpportunity } from '../api/types.js';
 import { scoreColors, scoreRangeLabel } from '../utils/color-theme.js';
@@ -20,9 +21,10 @@ import { ScoreBadge } from './ScoreBadge.js';
 interface JobCardProps {
   job: JobOpportunity;
   isDark: boolean;
+  readonly onAnalyze?: (job: JobOpportunity) => void;
 }
 
-export const JobCard = memo(function JobCard({ job, isDark }: JobCardProps) {
+export const JobCard = memo(function JobCard({ job, isDark, onAnalyze }: JobCardProps) {
   const grp = reportGroup(job);
   const c = GROUP_COLORS[grp];
   const src = job.sourceBoard ?? job.source;
@@ -263,6 +265,29 @@ export const JobCard = memo(function JobCard({ job, isDark }: JobCardProps) {
             >
               {rightMeta}
             </Typography>
+            {onAnalyze && (
+              <Button
+                size="small"
+                variant="outlined"
+                color="primary"
+                startIcon={<AnalyticsOutlinedIcon sx={{ fontSize: 14 }} />}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onAnalyze(job);
+                }}
+                sx={{
+                  mt: 0.5,
+                  fontSize: '0.68rem',
+                  py: 0.35,
+                  px: 1,
+                  minWidth: 0,
+                  borderColor: isDark ? 'rgba(45,212,191,0.35)' : undefined,
+                }}
+              >
+                Analisar CV
+              </Button>
+            )}
           </Stack>
         </Stack>
       </CardContent>

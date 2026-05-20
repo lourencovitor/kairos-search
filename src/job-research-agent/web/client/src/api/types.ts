@@ -11,6 +11,7 @@ export type ReportGroup =
 
 export interface JobOpportunity {
   id: string;
+  sourceId?: string;
   companyName: string;
   title: string;
   url: string;

@@ -25,7 +25,8 @@ import {
   Typography,
 } from '@mui/material';
 
-import type { ReportGroup } from './api/types.js';
+import type { JobOpportunity, ReportGroup } from './api/types.js';
+import { AtsAnalysisModal } from './ats/components/AtsAnalysisModal.js';
 import { FiltersPanel } from './components/FiltersPanel.js';
 import { GroupDistribution } from './components/GroupDistribution.js';
 import { JobCard } from './components/JobCard.js';
@@ -62,6 +63,8 @@ export default function App({
   const [marketFilter, setMarketFilter] = useState<string[]>([]);
   const [score, setScore] = useState(0);
   const [remotePolicies, setRemotePolicies] = useState<string[]>([]);
+  const [atsJob, setAtsJob] = useState<JobOpportunity | null>(null);
+  const [atsModalOpen, setAtsModalOpen] = useState(false);
 
   const toggleGroup = (g: string) =>
     startTransition(() =>
@@ -427,7 +430,14 @@ export default function App({
                             : undefined
                         }
                       >
-                        <JobCard job={job} isDark={isDark} />
+                        <JobCard
+                          job={job}
+                          isDark={isDark}
+                          onAnalyze={(j) => {
+                            setAtsJob(j);
+                            setAtsModalOpen(true);
+                          }}
+                        />
                       </Box>
                     </Fragment>
                   ))}
@@ -543,6 +553,16 @@ export default function App({
           </Grid>
         </Grid>
       </Container>
+
+      <AtsAnalysisModal
+        open={atsModalOpen}
+        job={atsJob}
+        isDark={isDark}
+        onClose={() => {
+          setAtsModalOpen(false);
+          setAtsJob(null);
+        }}
+      />
 
       <ScrollToTopButton />
     </Box>
