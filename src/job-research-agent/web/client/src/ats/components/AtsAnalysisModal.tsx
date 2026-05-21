@@ -41,6 +41,7 @@ import { GROUP_COLORS, GROUP_DARK, GROUP_LABELS, reportGroup } from '../../utils
 import { AtsApiError, atsApi } from '../api/client.js';
 import type { AnalysisDto, ApplyVerdict, CandidateProfile } from '../api/types.js';
 import { clearCvProfile, saveCvProfile } from '../profileStorage.js';
+import { cleanAnalysisText } from '../utils/cleanAnalysisText.js';
 import { ApplyVerdictBanner, ApplyVerdictPill } from './ApplyVerdictBanner.js';
 import { InlineMarkdown } from './InlineMarkdown.js';
 import { ScoreBreakdownView } from './ScoreBreakdownView.js';
@@ -1549,7 +1550,7 @@ export function AtsAnalysisModal(props: {
                         whiteSpace: 'pre-wrap',
                       }}
                     >
-                      {analysis.summary}
+                      {cleanAnalysisText(analysis.summary)}
                     </InlineMarkdown>
                   </CardContent>
                 </Card>
@@ -1606,7 +1607,7 @@ export function AtsAnalysisModal(props: {
                               pt: 0.15,
                             }}
                           >
-                            {g}
+                            {cleanAnalysisText(g)}
                           </InlineMarkdown>
                         </Box>
                       ))}
@@ -1682,7 +1683,7 @@ export function AtsAnalysisModal(props: {
                               pt: 0.35,
                             }}
                           >
-                            {stripLeadingSuggestionNumber(s)}
+                            {cleanAnalysisText(stripLeadingSuggestionNumber(s))}
                           </InlineMarkdown>
                         </Box>
                       ))}
