@@ -1,25 +1,25 @@
 {
-  "runId": "2026-05-20T12-05-36-738Z",
-  "generatedAt": "2026-05-20T12:05:36.738Z",
-  "totalRawJobs": 5596,
-  "rankedJobs": 737,
-  "selectedJobs": 731,
-  "rejectedJobs": 4843,
+  "runId": "2026-05-22T11-34-31-072Z",
+  "generatedAt": "2026-05-22T11:34:31.072Z",
+  "totalRawJobs": 5589,
+  "rankedJobs": 771,
+  "selectedJobs": 755,
+  "rejectedJobs": 4803,
   "selectionSummary": {
     "limit": 999,
     "minScore": 0,
     "desiredPrimaryJobs": 919,
     "desiredInternationalJobs": 80,
     "usedThresholdFallback": false,
-    "selectedPrimaryJobs": 710,
-    "selectedSecondaryJobs": 27,
-    "selectedWorldwideCompatiblePrimaryJobs": 59,
-    "filledFromSecondaryBecausePrimaryShortfall": 209,
+    "selectedPrimaryJobs": 749,
+    "selectedSecondaryJobs": 22,
+    "selectedWorldwideCompatiblePrimaryJobs": 57,
+    "filledFromSecondaryBecausePrimaryShortfall": 170,
     "marketCounts": {
-      "brazil": 270,
-      "brazil_friendly": 373,
+      "brazil": 302,
+      "brazil_friendly": 382,
       "latam": 8,
-      "international": 86,
+      "international": 79,
       "unclear": 0
     }
   },
@@ -44,28 +44,28 @@
       "focus": "brazil",
       "tier": "brazil_public_api",
       "fetchedJobs": 0,
-      "error": "Request failed with status 429 for https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=react+developer&location=Brazil&start=25"
+      "error": "Request failed with status 429 for https://www.linkedin.com/jobs-guest/jobs/api/seeMoreJobPostings/search?keywords=senior+software+engineer&location=Brazil&start=0"
     },
     {
       "source": "himalayas",
       "label": "Himalayas Brazil search",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 1013
+      "fetchedJobs": 1018
     },
     {
       "source": "getonboard",
       "label": "Get on Board Brazil search",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 62
+      "fetchedJobs": 63
     },
     {
       "source": "gupy",
       "label": "Gupy Brasil",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 153
+      "fetchedJobs": 152
     },
     {
       "source": "ashby",
@@ -90,13 +90,6 @@
     },
     {
       "source": "ashby",
-      "label": "Ashby – Resend",
-      "focus": "global",
-      "tier": "direct_company_board",
-      "fetchedJobs": 3
-    },
-    {
-      "source": "ashby",
       "label": "Ashby – Inngest",
       "focus": "global",
       "tier": "direct_company_board",
@@ -104,10 +97,10 @@
     },
     {
       "source": "ashby",
-      "label": "Ashby – PostHog",
+      "label": "Ashby – Resend",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 13
+      "fetchedJobs": 4
     },
     {
       "source": "ashby",
@@ -125,6 +118,20 @@
     },
     {
       "source": "ashby",
+      "label": "Ashby – PostHog",
+      "focus": "global",
+      "tier": "direct_company_board",
+      "fetchedJobs": 15
+    },
+    {
+      "source": "ashby",
+      "label": "Ashby – Render",
+      "focus": "global",
+      "tier": "direct_company_board",
+      "fetchedJobs": 21
+    },
+    {
+      "source": "ashby",
       "label": "Ashby – Linear",
       "focus": "global",
       "tier": "direct_company_board",
@@ -139,21 +146,7 @@
     },
     {
       "source": "ashby",
-      "label": "Ashby – Render",
-      "focus": "global",
-      "tier": "direct_company_board",
-      "fetchedJobs": 21
-    },
-    {
-      "source": "ashby",
       "label": "Ashby – Supabase",
-      "focus": "global",
-      "tier": "direct_company_board",
-      "fetchedJobs": 34
-    },
-    {
-      "source": "ashby",
-      "label": "Ashby – Confluent",
       "focus": "global",
       "tier": "direct_company_board",
       "fetchedJobs": 34
@@ -163,42 +156,49 @@
       "label": "Ashby – OpenAI",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 26
+      "fetchedJobs": 25
+    },
+    {
+      "source": "ashby",
+      "label": "Ashby – Confluent",
+      "focus": "global",
+      "tier": "direct_company_board",
+      "fetchedJobs": 31
     },
     {
       "source": "ashby",
       "label": "Ashby – n8n",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 47
+      "fetchedJobs": 48
     },
     {
       "source": "ashby",
       "label": "Ashby – 1Password",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 55
+      "fetchedJobs": 56
     },
     {
       "source": "ashby",
       "label": "Ashby – Cohere",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 74
+      "fetchedJobs": 76
     },
     {
       "source": "greenhouse",
       "label": "Canonical",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 291
+      "fetchedJobs": 290
     },
     {
       "source": "greenhouse",
       "label": "Elastic",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 150
+      "fetchedJobs": 155
     },
     {
       "source": "greenhouse",
@@ -212,63 +212,63 @@
       "label": "Stripe",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 475
+      "fetchedJobs": 498
     },
     {
       "source": "greenhouse",
       "label": "Databricks",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 797
+      "fetchedJobs": 785
     },
     {
       "source": "greenhouse",
       "label": "MongoDB",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 417
+      "fetchedJobs": 419
     },
     {
       "source": "greenhouse",
       "label": "Twilio",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 158
+      "fetchedJobs": 154
     },
     {
       "source": "greenhouse",
       "label": "Fivetran",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 136
+      "fetchedJobs": 134
     },
     {
       "source": "greenhouse",
       "label": "Grafana Labs",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 166
+      "fetchedJobs": 144
     },
     {
       "source": "greenhouse",
       "label": "New Relic",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 76
+      "fetchedJobs": 74
     },
     {
       "source": "greenhouse",
       "label": "Fastly",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 69
+      "fetchedJobs": 63
     },
     {
       "source": "greenhouse",
       "label": "PagerDuty",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 39
+      "fetchedJobs": 37
     },
     {
       "source": "greenhouse",
@@ -296,14 +296,14 @@
       "label": "Flex",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 31
+      "fetchedJobs": 32
     },
     {
       "source": "lever",
       "label": "JumpCloud",
       "focus": "global",
       "tier": "direct_company_board",
-      "fetchedJobs": 26
+      "fetchedJobs": 25
     },
     {
       "source": "lever",
@@ -344,7 +344,7 @@
         "siteId": "linkedin",
         "pages": 1,
         "queries": 1,
-        "durationMs": 2878,
+        "durationMs": 2506,
         "droppedJobs": 0,
         "warnings": []
       }
@@ -354,12 +354,12 @@
       "label": "browser_mcp:programathor",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 59,
+      "fetchedJobs": 60,
       "metadata": {
         "siteId": "programathor",
         "pages": 100,
         "queries": 25,
-        "durationMs": 422132,
+        "durationMs": 420071,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -472,7 +472,7 @@
         "siteId": "glassdoor",
         "pages": 1,
         "queries": 1,
-        "durationMs": 16613,
+        "durationMs": 12954,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results"
@@ -484,27 +484,15 @@
       "label": "browser_mcp:vagas_com",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 300,
+      "fetchedJobs": 271,
+      "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"https://www.vagas.com.br/vagas-de-typescript?pagina=2\", waiting until \"domcontentloaded\"\u001b[22m\n",
       "metadata": {
         "siteId": "vagas_com",
-        "pages": 85,
-        "queries": 22,
-        "durationMs": 333464,
+        "pages": 69,
+        "queries": 18,
+        "durationMs": 668004,
         "droppedJobs": 0,
         "warnings": [
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
@@ -574,7 +562,7 @@
         "siteId": "catho",
         "pages": 100,
         "queries": 25,
-        "durationMs": 353251,
+        "durationMs": 351794,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -690,10 +678,9 @@
         "siteId": "infojobs_br",
         "pages": 35,
         "queries": 9,
-        "durationMs": 141059,
+        "durationMs": 140222,
         "droppedJobs": 0,
         "warnings": [
-          "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
@@ -716,17 +703,14 @@
       "label": "browser_mcp:gupy_public",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 96,
+      "fetchedJobs": 100,
       "metadata": {
         "siteId": "gupy_public",
         "pages": 100,
         "queries": 25,
-        "durationMs": 398101,
-        "droppedJobs": 86,
+        "durationMs": 398022,
+        "droppedJobs": 84,
         "warnings": [
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
@@ -818,7 +802,7 @@
         "siteId": "trampos_co",
         "pages": 100,
         "queries": 25,
-        "durationMs": 397855,
+        "durationMs": 395969,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -933,7 +917,7 @@
         "siteId": "revelo",
         "pages": 100,
         "queries": 25,
-        "durationMs": 387948,
+        "durationMs": 385639,
         "droppedJobs": 0,
         "warnings": [
           "extraction_zero_results",
@@ -1044,17 +1028,14 @@
       "label": "browser_mcp:geekhunter",
       "focus": "brazil",
       "tier": "brazil_public_api",
-      "fetchedJobs": 10,
+      "fetchedJobs": 40,
       "metadata": {
         "siteId": "geekhunter",
         "pages": 100,
         "queries": 25,
-        "durationMs": 942881,
+        "durationMs": 405412,
         "droppedJobs": 0,
         "warnings": [
-          "extraction_zero_results",
-          "extraction_zero_results",
-          "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
           "extraction_zero_results",
